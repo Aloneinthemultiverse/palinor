@@ -58,7 +58,7 @@ if (-not $sink) {
     Start-Process $py -ArgumentList "-m", "bigdata.hbase_sink", "--bootstrap", "localhost:9092", "--hbase", "localhost" `
         -WorkingDirectory $root -WindowStyle Hidden -RedirectStandardOutput data\logs\hbase_sink.out.log -RedirectStandardError data\logs\hbase_sink.log
 }
-$stream = docker exec palinor-spark sh -c "pgrep -f stream_etl" 2>$null
+$stream = docker exec palinor-spark sh -c "pgrep -f 'stream_etl[.]py'" 2>$null
 if (-not $stream) {
     docker exec -d -w /opt/palinor/bigdata -e PALINOR_CHECKPOINT_VERSION=v3 -e PALINOR_STARTING_OFFSETS=earliest `
         palinor-spark sh -c "/opt/spark/bin/spark-submit --master 'local[*]' --conf spark.jars.ivy=/tmp/.ivy2 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3 stream_etl.py > /opt/palinor/data/logs/stream_etl.log 2>&1"

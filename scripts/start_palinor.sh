@@ -36,7 +36,7 @@ done
 pgrep -f bigdata.hbase_sink >/dev/null || \
   nohup "$PY" -m bigdata.hbase_sink --bootstrap localhost:9092 --hbase localhost \
     > data/logs/hbase_sink.out.log 2> data/logs/hbase_sink.log &
-docker exec palinor-spark sh -c "pgrep -f stream_etl" >/dev/null 2>&1 || \
+docker exec palinor-spark sh -c "pgrep -f 'stream_etl[.]py'" >/dev/null 2>&1 || \
   docker exec -d -w /opt/palinor/bigdata -e PALINOR_CHECKPOINT_VERSION=v3 -e PALINOR_STARTING_OFFSETS=earliest \
     palinor-spark sh -c "/opt/spark/bin/spark-submit --master 'local[*]' --conf spark.jars.ivy=/tmp/.ivy2 \
       --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3 stream_etl.py > /opt/palinor/data/logs/stream_etl.log 2>&1"

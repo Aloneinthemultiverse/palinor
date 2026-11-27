@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "palinor": {
+      "type": "remote",
+      "url": "{env:PALINOR_MCP_URL}",
+      "enabled": true
+    },
+    "truthguard": {
+      "type": "local",
+      "command": [
+        "python",
+        "-m",
+        "truthguard.mcp_server"
+      ],
+      "enabled": false
+    }
+  },
+  "permission": {
+    "edit": "allow",
+    "bash": "deny",
+    "webfetch": "deny"
+  },
+  "instructions": [
+    "AGENTS.palinor.md"
+  ]
+}

@@ -1,0 +1,2287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<title>PALINOR Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230b0d12'/%3E%3Cpath d='M16 8L24 21H8Z' fill='none' stroke='%23a9b0bf' stroke-width='1.6' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='8' r='3.4' fill='%23D97757'/%3E%3Ccircle cx='24' cy='21' r='3.4' fill='%2310A37F'/%3E%3Ccircle cx='8' cy='21' r='3.4' fill='%238B7CF6'/%3E%3Ccircle cx='16' cy='16.6' r='2.4' fill='%23F5C451'/%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#07080c;--bg-2:#0c0e14;--elev:#11141c;
+  --panel:rgba(255,255,255,.035);--panel-2:rgba(255,255,255,.055);--panel-3:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.075);--border-2:rgba(255,255,255,.14);
+  --text:#e8eaf0;--text-2:#b0b7c5;--text-3:#8a92a3;
+  --ok:#34d399;--run:#60a5fa;--warn:#fbbf24;--bad:#f87171;--info:#7dd3fc;--hot:#f472b6;--mute:#8b93a5;--syn:#a78bfa;
+  --claude:#D97757;--chatgpt:#10A37F;--opencode:#8B7CF6;--human:#F472B6;--laya:#F5C451;--orch:#38BDF8;--local:#22D3EE;--other:#94a3b8;
+  --focus:#93c5fd;--r:14px;--r-sm:10px;
+  --font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,"Liberation Mono",monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 30px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;color:var(--text);font:14px/1.5 var(--font);font-feature-settings:"cv11","ss01";
+  background:radial-gradient(1100px 520px at 8% -8%,rgba(139,124,246,.13),transparent 60%),
+             radial-gradient(900px 480px at 100% -4%,rgba(217,119,87,.10),transparent 60%),
+             radial-gradient(800px 600px at 50% 120%,rgba(16,163,127,.06),transparent 60%),var(--bg);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:rgba(147,197,253,.3)}
+a{color:var(--info)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:8px}
+.skip{position:absolute;left:-999px;top:8px;z-index:100;background:var(--elev);padding:8px 12px;border-radius:8px}
+.skip:focus{left:12px}
+.mono{font-family:var(--mono);font-size:12px}
+.muted{color:var(--text-3)}
+.sm{font-size:12px}
+.row{display:flex;align-items:center;gap:8px;min-width:0}
+.row.wrap{flex-wrap:wrap}.gap-s{gap:6px}.end{justify-content:flex-end}.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+
+/* ---------- colour keys (class names come from fixed allow-lists in the script) */
+.pf-claude{--c:var(--claude)}.pf-chatgpt{--c:var(--chatgpt)}.pf-opencode{--c:var(--opencode)}.pf-human{--c:var(--human)}
+.pf-laya{--c:var(--laya)}.pf-orch{--c:var(--orch)}.pf-local{--c:var(--local)}.pf-other{--c:var(--other)}
+.st-ok{--c:var(--ok)}.st-run{--c:var(--run)}.st-warn{--c:var(--warn)}.st-bad{--c:var(--bad)}.st-info{--c:var(--info)}
+.st-hot{--c:var(--hot)}.st-mute{--c:var(--mute)}.st-syn{--c:var(--syn)}
+.k-info{--c:#7dd3fc}.k-question{--c:#fbbf24}.k-answer{--c:#34d399}.k-context{--c:#2dd4bf}.k-request{--c:#a78bfa}
+.k-review{--c:#f0abfc}.k-decision{--c:#f5c451}.k-alert{--c:#f87171}
+.pos-keep{--c:#60a5fa}.pos-accept{--c:#fbbf24}.pos-merge{--c:#a78bfa}.pos-unsure{--c:#8b93a5}
+.ev-project{--c:#e5e7eb}.ev-participant{--c:#94a3b8}.ev-task{--c:#38bdf8}.ev-command{--c:#60a5fa}.ev-context{--c:#2dd4bf}
+.ev-message{--c:#a78bfa}.ev-decision{--c:#f5c451}.ev-finding{--c:#34d399}.ev-experiment{--c:#22d3ee}.ev-execution{--c:#fb923c}
+.ev-github{--c:#d1d5db}.ev-error{--c:#f87171}.ev-other{--c:#8b93a5}
+
+/* ---------- primitives */
+.chip{--c:var(--mute);display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:999px;font-size:11.5px;font-weight:600;
+  letter-spacing:.01em;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+  color:color-mix(in srgb,var(--c) 72%,white);background:color-mix(in srgb,var(--c) 13%,transparent);
+  border:1px solid color-mix(in srgb,var(--c) 26%,transparent)}
+.chip.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c);flex:none}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;font-size:11px;color:var(--text-2);background:var(--panel-2);border:1px solid var(--border)}
+.idt{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:6px;color:var(--text-2);background:rgba(255,255,255,.04);border:1px solid var(--border);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.av{--c:var(--other);flex:none;width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font:700 10.5px/1 var(--font);letter-spacing:.02em;color:#0b0d12;
+  background:linear-gradient(140deg,color-mix(in srgb,var(--c) 88%,white),color-mix(in srgb,var(--c) 78%,black));
+  box-shadow:0 0 0 2px var(--bg-2),0 0 0 3px color-mix(in srgb,var(--c) 45%,transparent)}
+.av.sm{width:20px;height:20px;font-size:8.5px;box-shadow:0 0 0 1.5px var(--bg-2),0 0 0 2.5px color-mix(in srgb,var(--c) 40%,transparent)}
+.who{display:inline-flex;align-items:center;gap:7px;min-width:0;font-weight:600;color:color-mix(in srgb,var(--c) 55%,white)}
+.who .who-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who.sm{gap:5px;font-size:12.5px}
+.sdot{--c:var(--mute);display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
+.t{color:var(--text-3);font-size:12px;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--border-2);
+  background:var(--panel-2);color:var(--text);font-weight:600;font-size:13px;cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease),transform .1s var(--ease);white-space:nowrap}
+.btn:hover{background:var(--panel-3);border-color:rgba(255,255,255,.22)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:#eef0f4;color:#0b0d12;border-color:#eef0f4}
+.btn.primary:hover{background:#fff}
+.btn.ok{--c:var(--ok)}.btn.bad{--c:var(--bad)}
+.btn.ok,.btn.bad{color:color-mix(in srgb,var(--c) 70%,white);background:color-mix(in srgb,var(--c) 12%,transparent);border-color:color-mix(in srgb,var(--c) 32%,transparent)}
+.btn.ok:hover,.btn.bad:hover{background:color-mix(in srgb,var(--c) 20%,transparent)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px;border-radius:8px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text-2)}
+.btn.ghost:hover{background:var(--panel-2);color:var(--text)}
+.linkbtn{background:none;border:0;padding:2px 4px;color:var(--info);font-weight:600;font-size:12px;cursor:pointer;border-radius:6px}
+.linkbtn:hover{text-decoration:underline}
+.input{width:100%;min-width:0;height:36px;padding:0 11px;border-radius:9px;border:1px solid var(--border-2);background:rgba(0,0,0,.25);color:var(--text);transition:border-color .15s,box-shadow .15s}
+.input::placeholder{color:#6f7787}
+.input:focus{border-color:rgba(147,197,253,.6);box-shadow:0 0 0 3px rgba(147,197,253,.15)}
+textarea.input{height:auto;padding:9px 11px;resize:vertical;line-height:1.45}
+select.input{padding-right:28px}
+.input.sm{height:30px;font-size:12.5px;padding:0 9px}
+label.lbl{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin:12px 0 6px}
+label.lbl .opt{font-weight:500;color:var(--text-3)}
+
+/* ---------- header */
+.top{position:sticky;top:0;z-index:30;background:rgba(7,8,12,.72);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--border)}
+.top-in{display:flex;align-items:center;gap:16px;max-width:1480px;margin:0 auto;padding:12px 24px}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.logo{width:30px;height:30px;flex:none}
+.wordmark{font-weight:800;letter-spacing:.24em;font-size:14px;background:linear-gradient(180deg,#fff,#b9bfcc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.proj{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1;padding-left:16px;border-left:1px solid var(--border)}
+.proj-name{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36ch}
+.proj-goal{color:var(--text-3);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.top-r{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none}
+.live{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--border);background:var(--panel);font-size:12px;color:var(--text-2);max-width:340px}
+.live span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live .dot{width:8px;height:8px;border-radius:50%;background:var(--mute);flex:none}
+.live-ok .dot{background:var(--ok);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:breathe 2.4s infinite}
+.live-warn .dot{background:var(--warn)}.live-err .dot{background:var(--bad)}
+.live-err{color:#fecaca;border-color:rgba(248,113,113,.35)}
+@keyframes breathe{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.tabs{display:flex;gap:2px;max-width:1480px;margin:0 auto;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 12px;border:0;background:none;color:var(--text-3);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;border-radius:8px 8px 0 0;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{color:var(--text)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--claude),var(--opencode),var(--chatgpt))}
+.badge{min-width:18px;height:18px;padding:0 5px;border-radius:999px;font-size:10.5px;font-weight:700;display:inline-grid;place-items:center;background:var(--panel-3);color:var(--text)}
+.badge.hot{background:color-mix(in srgb,var(--hot) 25%,transparent);color:#fbcfe8}
+.badge.warn{background:color-mix(in srgb,var(--warn) 22%,transparent);color:#fde68a}
+.badge.new{background:color-mix(in srgb,var(--opencode) 30%,transparent);color:#ddd6fe}
+
+/* ---------- layout */
+main{max-width:1480px;margin:0 auto;padding:22px 24px 64px}
+.panel{animation:fade .25s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
+.card-h{display:flex;align-items:center;gap:10px;margin:0 0 12px;min-width:0}
+.card-h h2,.sec-h h2{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-2)}
+.card-h .sub{color:var(--text-3);font-size:12px;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec-h{display:flex;align-items:center;gap:12px;margin:2px 0 14px;flex-wrap:wrap}
+.sec-h p{margin:0;color:var(--text-3);font-size:13px}
+.stack{display:grid;gap:16px;align-content:start;min-width:0}
+.grid{display:grid;gap:16px}
+.mt{margin-top:16px}
+.empty{display:grid;place-items:center;text-align:center;padding:38px 16px;color:var(--text-3)}
+.empty-ic{width:38px;height:38px;border-radius:12px;margin-bottom:10px;background:linear-gradient(135deg,rgba(217,119,87,.25),rgba(139,124,246,.25),rgba(16,163,127,.25));border:1px solid var(--border-2)}
+.empty-t{margin:0;color:var(--text);font-weight:650}
+.empty-s{margin:6px 0 0;max-width:60ch;font-size:13px}
+.empty.sm{padding:18px 8px}
+
+/* ---------- connect / welcome */
+.connect-wrap{max-width:1480px;margin:0 auto;padding:0 24px}
+.connect{margin-top:16px;max-width:560px;margin-left:auto}
+body.disconnected .connect-wrap{max-width:640px;padding-top:7vh}
+body.disconnected .connect{margin:0 auto}
+.hero{text-align:center;margin-bottom:22px}
+.hero h1{margin:14px 0 6px;font-size:28px;letter-spacing:-.02em}
+.hero p{margin:0 auto;color:var(--text-3);max-width:52ch}
+.hero .logo{width:54px;height:54px}
+.hint{color:var(--text-3);font-size:12px}
+.errline{margin-top:10px;padding:9px 12px;border-radius:10px;font-size:13px;color:#fecaca;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25)}
+.warnbox{margin-top:10px;padding:9px 12px;border-radius:10px;font-size:12.5px;color:#fde68a;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25)}
+.dangerbox{margin-top:10px;padding:9px 12px;border-radius:10px;font-size:12.5px;color:#fecaca;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3)}
+
+/* ---------- overview */
+.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpi{--c:var(--mute);text-align:left;display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;color:var(--text);min-width:0;
+  background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--c) 12%,transparent),transparent 55%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  transition:border-color .2s var(--ease),transform .2s var(--ease)}
+.kpi:hover{border-color:color-mix(in srgb,var(--c) 40%,var(--border));transform:translateY(-1px)}
+.kpi-l{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+.kpi-v{font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi-s{font-size:12px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-bar{height:4px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:6px}
+.kpi-bar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 70%,white),var(--c));transition:width .6s var(--ease)}
+.tone-ok{--c:var(--ok)}.tone-run{--c:var(--run)}.tone-warn{--c:var(--warn)}.tone-bad{--c:var(--bad)}.tone-hot{--c:var(--hot)}.tone-info{--c:var(--info)}.tone-mute{--c:var(--mute)}.tone-syn{--c:var(--syn)}
+.ov-main{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);margin-top:16px}
+.two{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}
+.net-wrap{position:relative;border-radius:12px;background:radial-gradient(60% 60% at 50% 48%,rgba(139,124,246,.08),transparent 70%)}
+#net{display:block;width:100%;height:auto;max-height:520px;overflow:visible}
+.ne{fill:none;stroke:var(--c);stroke-opacity:.5;stroke-linecap:round;transition:stroke-opacity .2s,opacity .2s}
+.ne.bc{stroke-dasharray:2 5;stroke-opacity:.22}
+.ne.recent{stroke-opacity:.9;filter:url(#glow)}
+#net.focus .ne{opacity:.1}#net.focus .ne.hl{opacity:1;stroke-opacity:.95}
+.nn{cursor:pointer;outline:none}
+.nn .ring{fill:#0e1118;stroke:var(--c);stroke-width:2.2}
+.nn .halo{fill:var(--c);opacity:.12;transition:opacity .2s}
+.nn:hover .halo,.nn:focus-visible .halo{opacity:.3}
+.nn:focus-visible .ring{stroke-width:3.5}
+.nn .ini{fill:color-mix(in srgb,var(--c) 70%,white);font:700 12px var(--font);letter-spacing:.02em}
+.nn .nl{fill:var(--text);font:600 13px var(--font)}
+.nn .ns{fill:var(--text-3);font:500 11px var(--font)}
+.nn.ping .halo{animation:ping 1.1s var(--ease)}
+@keyframes ping{0%{opacity:.6;transform:scale(1)}100%{opacity:.12;transform:scale(1.25)}}
+#net.focus .nn{opacity:.45}#net.focus .nn.hl{opacity:1}
+.pulse{fill:var(--c);filter:url(#glow)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--text-3)}
+.legend .li{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.channels{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.channels li{display:flex;align-items:center;gap:8px;font-size:12.5px;min-width:0}
+.channels .cnt{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--text-2);font-weight:650}
+.people{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.pp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;align-items:center;padding:8px;border-radius:10px;transition:background .15s}
+.pp:hover{background:var(--panel)}
+.pp-n{display:flex;align-items:center;gap:8px;min-width:0}
+.pp-name{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-m{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);min-width:0;flex-wrap:wrap}
+.pp-caps{grid-column:2;display:flex;flex-wrap:wrap;gap:4px}
+.attn{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.attn button{--c:var(--mute);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;width:100%;text-align:left;padding:9px 11px;border-radius:10px;cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--c) 22%,var(--border));background:color-mix(in srgb,var(--c) 6%,transparent);color:var(--text);transition:background .15s}
+.attn button:hover{background:color-mix(in srgb,var(--c) 12%,transparent)}
+.attn .ai{width:8px;height:8px;border-radius:50%;background:var(--c);grid-row:span 2}
+.attn .at{font-weight:650;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.attn .ax{grid-column:2;font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.attn .ag{grid-row:span 2;color:var(--text-3)}
+.feed{list-style:none;margin:0;padding:0;display:grid}
+.feed li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border)}
+.feed li:last-child{border-bottom:0}
+.feed .fl{display:flex;align-items:center;gap:6px;min-width:0;font-size:12.5px;flex-wrap:wrap}
+.feed .fx{grid-column:2;font-size:12.5px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed .t{grid-row:span 2;align-self:start}
+.proj-card h1{margin:0 0 4px;font-size:20px;letter-spacing:-.01em}
+.proj-card p{margin:0;color:var(--text-2)}
+.reqs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+/* ---------- pipeline */
+.plan{margin-bottom:18px}
+.plan-h{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.plan-h h3{margin:0 0 6px;font-size:17px;letter-spacing:-.01em}
+.cmdr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:12.5px;color:var(--text-3)}
+.cmdr .arrow{color:var(--text-3)}
+.prog{min-width:220px;flex:1;max-width:420px;margin-left:auto}
+.prog-t{display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);margin-bottom:6px}
+.prog-t b{color:var(--text);font-size:18px;font-variant-numeric:tabular-nums}
+.pbar{height:8px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.pbar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--chatgpt),#34d399);box-shadow:0 0 18px rgba(52,211,153,.35);transition:width .7s var(--ease)}
+.stages{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:22px;overflow-x:auto;padding:4px 2px 8px;margin-top:16px}
+.stage{position:relative;min-width:0}
+.stage:not(:last-child)::after{content:"";position:absolute;top:13px;right:-17px;width:10px;height:10px;border-top:2px solid var(--border-2);border-right:2px solid var(--border-2);transform:rotate(45deg)}
+.stage-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;height:36px}
+.stage-h .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--panel-3);color:var(--text);font-size:11px}
+.tasks{display:grid;gap:10px}
+.task{--c:var(--mute);position:relative;padding:12px 12px 12px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--c);display:grid;gap:8px;min-width:0;transition:border-color .2s,transform .2s}
+.task:hover{border-color:var(--border-2);border-left-color:var(--c)}
+.task.st-run{box-shadow:0 0 0 1px color-mix(in srgb,var(--run) 18%,transparent),0 10px 30px -14px color-mix(in srgb,var(--run) 60%,transparent)}
+.task-top{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.task-title{font-weight:650;line-height:1.35}
+.task-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--text-3)}
+.task-sum{font-size:12.5px;color:var(--text-2);background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:9px;padding:8px 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.waits{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#fde68a}
+.wl{display:grid;gap:10px;margin-top:6px}
+.wl-r{display:grid;grid-template-columns:minmax(110px,170px) minmax(0,1fr) auto;gap:12px;align-items:center;font-size:12.5px}
+.wl-b{display:flex;height:10px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
+.wl-b .d{background:linear-gradient(90deg,#10a37f,#34d399)}.wl-b .a{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.wl-n{color:var(--text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sub-h{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);margin:18px 0 10px}
+
+/* ---------- conflicts */
+.conflict{margin-bottom:18px}
+.cf-h h3{margin:0 0 8px;font-size:16px;line-height:1.4;letter-spacing:-.01em}
+.flow{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:22px}
+.step{position:relative;min-width:0;padding:12px;border-radius:12px;background:var(--panel);border:1px solid var(--border)}
+.step:not(:last-child)::after{content:"";position:absolute;top:22px;right:-17px;width:10px;height:10px;border-top:2px solid var(--border-2);border-right:2px solid var(--border-2);transform:rotate(45deg)}
+.step.done{border-color:color-mix(in srgb,var(--ok) 22%,var(--border))}
+.step.cur{border-color:color-mix(in srgb,var(--hot) 40%,var(--border));box-shadow:0 0 0 1px color-mix(in srgb,var(--hot) 20%,transparent)}
+.step-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3)}
+.step-h .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--panel-3);color:var(--text);font-size:10.5px}
+.step.done .step-h .n{background:color-mix(in srgb,var(--ok) 25%,transparent);color:#a7f3d0}
+.step.cur .step-h .n{background:color-mix(in srgb,var(--hot) 25%,transparent);color:#fbcfe8}
+.step p{margin:6px 0 0;font-size:12.5px;color:var(--text-2);overflow-wrap:anywhere}
+.quote{margin:8px 0 0;padding:8px 10px;border-left:2px solid var(--border-2);background:rgba(0,0,0,.18);border-radius:0 8px 8px 0;font-size:12.5px;color:var(--text-2);overflow-wrap:anywhere;white-space:pre-wrap}
+.node-ref{margin-top:8px;padding:8px 10px;border-radius:9px;background:rgba(0,0,0,.2);border:1px solid var(--border);display:grid;gap:6px;font-size:12.5px;min-width:0}
+.ev{display:grid;grid-template-columns:minmax(0,1fr) 60px auto;gap:8px;align-items:center;font-size:12px;color:var(--text-2)}
+.ev .rb{height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.ev .rb span{display:block;height:100%;background:var(--ok)}
+.opn{margin-top:8px;padding:9px 10px;border-radius:9px;background:rgba(0,0,0,.18);border:1px solid var(--border);display:grid;gap:6px}
+.audit{margin-top:6px;display:grid;gap:7px}
+.audit-l{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-2);font-weight:600}
+.audit-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.06)}
+.audit-bar .ex{background:linear-gradient(90deg,#3b82f6,#60a5fa)}.audit-bar .ch{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.audit-bar .chosen{box-shadow:inset 0 0 0 2px rgba(255,255,255,.75)}
+.audit-k{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--text-3)}
+.audit-k i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.audit-k i.ex{background:#60a5fa}.audit-k i.ch{background:#fbbf24}
+.effects{margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--text-2)}
+
+/* ---------- debates */
+.deb{margin-bottom:18px}
+.deb-h{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,360px);gap:16px;align-items:start}
+.deb-h h3{margin:0 0 8px;font-size:17px;letter-spacing:-.01em;line-height:1.35}
+.deb-ctx{margin:12px 0 0;color:var(--text-2);font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
+.verdict{border-radius:12px;padding:12px;background:linear-gradient(135deg,rgba(245,196,81,.10),rgba(245,196,81,.02));border:1px solid rgba(245,196,81,.25)}
+.verdict-h{display:flex;align-items:center;gap:8px;font-weight:700;color:#fde68a;font-size:13px}
+.laya-mark{width:16px;height:16px;border-radius:5px;background:conic-gradient(from 210deg,#F5C451,#fde68a,#F5C451);box-shadow:0 0 12px rgba(245,196,81,.5)}
+.verdict ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;color:var(--text-2)}
+.verdict p{margin:8px 0 0;font-size:12.5px;color:var(--text-2);overflow-wrap:anywhere}
+.persp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-top:16px}
+.persp{display:grid;gap:9px;align-content:start;padding:14px;border-radius:12px;background:var(--panel);border:1px solid var(--border);min-width:0;transition:border-color .2s}
+.persp.is-sel{border-color:rgba(52,211,153,.45);background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(52,211,153,.015));box-shadow:0 12px 34px -16px rgba(52,211,153,.5)}
+.persp.is-syn{background:linear-gradient(180deg,rgba(167,139,250,.08),rgba(167,139,250,.015));border-color:rgba(167,139,250,.3)}
+.persp.is-syn.is-sel{border-color:rgba(52,211,153,.5)}
+.persp.is-sup{opacity:.72}
+.persp-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.persp-a{margin:0;font-size:14.5px;line-height:1.4;overflow-wrap:anywhere}
+.persp-r{margin:0;font-size:12.5px;color:var(--text-2);overflow-wrap:anywhere}
+.lineage{display:grid;gap:5px;padding:8px 10px;border-radius:9px;border:1px dashed rgba(167,139,250,.4);background:rgba(167,139,250,.05);font-size:12px;color:var(--text-2)}
+.lineage .lr{display:flex;align-items:center;gap:6px;min-width:0}
+.lineage .lr span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vb{display:grid;gap:5px}
+.vb-t{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-3)}
+.vbar{display:flex;height:7px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.07)}
+.vbar .a{background:linear-gradient(90deg,#10b981,#34d399)}.vbar .r{background:linear-gradient(90deg,#ef4444,#f87171)}
+.sbar{height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.sbar span{display:block;height:100%;background:linear-gradient(90deg,#d4a72c,#F5C451)}
+.votes{display:grid;gap:5px;margin:0;padding:0;list-style:none}
+.votes li{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:7px;align-items:baseline;font-size:12px}
+.votes .vv{font-weight:700}.votes .vv.ap{color:#6ee7b7}.votes .vv.rj{color:#fca5a5}
+.votes .vr{color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pending{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#fde68a}
+.vote-form{display:grid;gap:7px;padding:10px;border-radius:10px;background:rgba(244,114,182,.05);border:1px solid rgba(244,114,182,.22)}
+.vote-form .vt{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fbcfe8}
+.persp-f{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.tiebreak{margin-top:14px;padding:14px;border-radius:12px;border:1px solid rgba(244,114,182,.35);background:linear-gradient(135deg,rgba(244,114,182,.10),rgba(244,114,182,.02))}
+.tb-h{display:grid;gap:3px;margin-bottom:10px;font-size:13px}
+.tb-h strong{color:#fbcfe8}
+.tb-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:10px}
+.tb-opt{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid var(--border-2);background:rgba(0,0,0,.2);cursor:pointer}
+.tb-opt:has(input:checked){border-color:rgba(244,114,182,.6);background:rgba(244,114,182,.08)}
+.tb-opt input{margin-top:3px;accent-color:var(--hot)}
+.tb-o{display:grid;gap:4px;min-width:0;font-size:12.5px}
+.newdeb summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-weight:650}
+.newdeb summary::-webkit-details-marker{display:none}
+.newdeb summary .plus{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--panel-3)}
+.newdeb[open] summary .plus{transform:rotate(45deg)}
+.form-grid{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:0 12px}
+.dec-mini{margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.25);font-size:12.5px;color:var(--text-2);display:grid;gap:4px}
+.dec-mini strong{color:#a7f3d0}
+
+/* ---------- messages */
+.msgs-layout{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px;align-items:start}
+.compose{position:sticky;top:116px}
+.reply-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(139,124,246,.08);border:1px solid rgba(139,124,246,.3);font-size:12.5px;color:var(--text-2);margin-bottom:4px}
+.reply-bar span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.filters .input{width:auto}
+.kchips{display:flex;flex-wrap:wrap;gap:5px}
+.kchip{cursor:pointer;opacity:.55;transition:opacity .15s}
+.kchip[aria-pressed="true"]{opacity:1}
+.kchip:hover{opacity:.9}
+button.chip{font-family:inherit}
+.thread{border:1px solid var(--border);border-radius:var(--r);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));padding:6px 14px;margin-bottom:12px}
+.thread-h{display:flex;align-items:center;gap:8px;padding:6px 0 2px;font-size:11.5px;color:var(--text-3)}
+.msg{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:10px 0}
+.msg + .msg{border-top:1px solid var(--border)}
+.msg.reply{padding-left:22px;position:relative}
+.msg.reply::before{content:"";position:absolute;left:6px;top:0;bottom:12px;width:2px;border-radius:2px;background:linear-gradient(var(--border-2),transparent)}
+.msg-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;min-width:0}
+.msg-h .from{font-weight:700;color:color-mix(in srgb,var(--c) 55%,white)}
+.msg-h .arrow{color:var(--text-3)}
+.msg-h .t{margin-left:auto}
+.msg-s{margin-top:4px;font-weight:650;font-size:13.5px;overflow-wrap:anywhere}
+.msg-body{margin-top:4px;color:var(--text-2);white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.5}
+.msg-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.rcpt{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-3)}
+.rcpt.done{color:#6ee7b7}
+.rcpt .av{margin-left:-6px}.rcpt .av:first-of-type{margin-left:2px}
+.ctx{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px;padding:7px 9px;border-radius:9px;background:rgba(45,212,191,.05);border:1px solid rgba(45,212,191,.2);font-size:12px;color:var(--text-2)}
+.refs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+
+/* ---------- knowledge graph */
+.g-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.g-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.g-canvas{position:relative;height:min(70vh,700px);min-height:420px;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;
+  background:radial-gradient(70% 60% at 50% 45%,rgba(139,124,246,.07),transparent 70%),
+             repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 40px),
+             repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 40px),#0a0c11}
+#gsvg{display:block;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none}
+#gsvg:active{cursor:grabbing}
+.gl{stroke:rgba(200,210,230,.16);stroke-width:1;transition:stroke .2s,opacity .2s}
+.gn{cursor:pointer}
+.gn .gc{stroke:rgba(0,0,0,.55);stroke-width:1.5;transition:opacity .2s}
+.gn .gt{display:none;fill:var(--text-2);font:500 10px var(--font);paint-order:stroke;stroke:#0a0c11;stroke-width:3px;pointer-events:none}
+.gn.imp .gt,#gsvg.zoomed .gn .gt,.gn.sel .gt,.gn.nb .gt,.gn.hov .gt,.gn.match .gt{display:block}
+.gn.sel .gc{stroke:#fff;stroke-width:2.5}
+.gn.match .gc{stroke:#fde68a;stroke-width:2.5}
+#gsvg.has-sel .gn{opacity:.25}#gsvg.has-sel .gn.sel,#gsvg.has-sel .gn.nb{opacity:1}
+#gsvg.has-sel .gl{opacity:.15}#gsvg.has-sel .gl.hl{opacity:1;stroke:rgba(253,230,138,.65);stroke-width:1.4}
+.g-hud{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
+.g-hud .btn{background:rgba(12,14,20,.8);backdrop-filter:blur(6px)}
+.g-count{position:absolute;left:12px;bottom:10px;font-size:11.5px;color:var(--text-3);background:rgba(12,14,20,.75);padding:4px 8px;border-radius:8px}
+.lchip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:999px;border:1px solid var(--border-2);background:var(--panel);font-size:12px;color:var(--text-2);cursor:pointer;transition:opacity .15s,background .15s}
+.lchip .sw{width:9px;height:9px;border-radius:50%}
+.lchip[aria-pressed="false"]{opacity:.45;text-decoration:line-through}
+.lchip:hover{background:var(--panel-2)}
+.lchip b{font-weight:650;color:var(--text);font-variant-numeric:tabular-nums}
+.gd h3{margin:8px 0 6px;font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+.kv{display:grid;grid-template-columns:90px minmax(0,1fr);gap:6px 10px;font-size:12.5px;margin:10px 0}
+.kv dt{color:var(--text-3)}.kv dd{margin:0;overflow-wrap:anywhere}
+.nbl{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:380px;overflow:auto}
+.nbl button{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:8px;align-items:center;width:100%;text-align:left;padding:6px 8px;border-radius:8px;border:1px solid transparent;background:none;color:var(--text);cursor:pointer;font-size:12px}
+.nbl button:hover{background:var(--panel-2);border-color:var(--border)}
+.nbl .rel{font-family:var(--mono);font-size:10.5px;color:var(--text-3)}
+.nbl .nx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-2)}
+.gdot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
+.results{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px}
+
+/* ---------- tables */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{position:sticky;top:0;text-align:left;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);background:#0f1219;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+td .tt{font-weight:600;min-width:180px}
+
+/* ---------- chats / decisions / events */
+.convs{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.conv{padding:14px;border-radius:12px;background:var(--panel);border:1px solid var(--border);display:grid;gap:8px}
+.conv h3{margin:0;font-size:14.5px;overflow-wrap:anywhere}
+.qs{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.qs li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--border)}
+.qs .qm{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-weight:800;color:#0b0d12;background:#fde047;font-size:12px}
+.qs .qx{font-weight:600;overflow-wrap:anywhere}
+.qs .qf{grid-column:2;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--text-3)}
+.export pre{margin:12px 0 0;max-height:420px;overflow:auto;padding:14px;border-radius:12px;background:#0a0c11;border:1px solid var(--border);font:12px/1.55 var(--mono);color:var(--text-2);white-space:pre-wrap;overflow-wrap:anywhere}
+.tl{list-style:none;margin:0;padding:0 0 0 22px;position:relative}
+.tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;border-radius:2px;background:linear-gradient(var(--border-2),transparent)}
+.tl > li{position:relative;margin-bottom:14px}
+.tl > li::before{content:"";position:absolute;left:-20px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--c,var(--mute));box-shadow:0 0 0 4px var(--bg),0 0 14px var(--c,transparent)}
+.dec h3{margin:6px 0 8px;font-size:15.5px;line-height:1.4;overflow-wrap:anywhere}
+.dec-sel{padding:10px 12px;border-radius:10px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.22);display:grid;gap:4px}
+.dec-sel strong{font-size:14px;overflow-wrap:anywhere}
+.rank{display:grid;gap:6px;margin-top:10px}
+.rank-r{display:grid;grid-template-columns:minmax(0,1fr) 120px 48px;gap:10px;align-items:center;font-size:12px}
+.rank-r .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-2)}
+.rank-r .rv{text-align:right;font-variant-numeric:tabular-nums;color:var(--text-3)}
+.dec ul.rat{margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--text-2)}
+details.more{margin-top:8px;font-size:12.5px;color:var(--text-2)}
+details.more summary{cursor:pointer;color:var(--text-3);font-weight:600}
+.evs{list-style:none;margin:0;padding:0}
+.evs li{display:grid;grid-template-columns:52px 72px minmax(150px,220px) minmax(0,1fr);gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid var(--border);font-size:12.5px}
+.evs li:hover{background:rgba(255,255,255,.02)}
+.evs .seq{font-family:var(--mono);color:var(--text-3);font-size:11.5px}
+.evs .es{min-width:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;color:var(--text-2)}
+.evs .es .sx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1 1 200px}
+
+/* ---------- toasts */
+.toasts{position:fixed;right:18px;bottom:18px;z-index:60;display:grid;gap:8px;max-width:min(420px,calc(100vw - 36px))}
+.toast{--c:var(--info);padding:11px 14px;border-radius:12px;background:rgba(17,20,28,.94);backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);
+  box-shadow:0 18px 40px -12px rgba(0,0,0,.7);font-size:13px;display:flex;gap:10px;align-items:flex-start;animation:tin .25s var(--ease)}
+.toast::before{content:"";width:8px;height:8px;margin-top:6px;border-radius:50%;background:var(--c);flex:none}
+.toast.out{opacity:0;transform:translateY(6px);transition:all .25s}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- responsive */
+@media (max-width:1180px){
+  .flow{grid-template-columns:1fr;gap:16px}
+  .step:not(:last-child)::after{top:auto;right:auto;left:20px;bottom:-14px;transform:rotate(135deg)}
+  .deb-h{grid-template-columns:1fr}
+  .g-layout{grid-template-columns:1fr}
+}
+@media (max-width:980px){
+  .ov-main,.two,.msgs-layout{grid-template-columns:1fr}
+  .compose{position:static}
+  .proj-goal{display:none}
+}
+@media (max-width:720px){
+  .top-in{padding:10px 16px;gap:10px;flex-wrap:wrap}
+  .proj{order:3;flex-basis:100%;padding:0;border:0}
+  .live{max-width:170px}
+  .tabs{padding:0 8px}
+  main{padding:16px 16px 56px}
+  .connect-wrap{padding:0 16px}
+  .card{padding:14px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stages{grid-auto-flow:row;grid-auto-columns:auto;overflow:visible}
+  .stage:not(:last-child)::after{top:auto;bottom:-16px;right:auto;left:16px;transform:rotate(135deg)}
+  .wl-r{grid-template-columns:minmax(0,1fr) auto;}
+  .wl-r .wl-b{grid-column:1/-1;grid-row:2}
+  .form-grid{grid-template-columns:1fr}
+  .evs li{grid-template-columns:44px minmax(0,1fr);gap:4px 8px}
+  .evs li > .t{grid-column:2}
+  .evs li > .ety,.evs li > .es{grid-column:1/-1}
+  .rank-r{grid-template-columns:minmax(0,1fr) 70px 40px}
+  .persp-grid,.convs{grid-template-columns:1fr}
+  .msg.reply{padding-left:14px}
+  .g-canvas{height:60vh;min-height:360px}
+  .toasts{right:12px;left:12px;bottom:12px;max-width:none}
+  .hero h1{font-size:23px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body class="disconnected">
+<a class="skip" href="#main">Skip to content</a>
+<noscript><p style="padding:24px">The PALINOR dashboard needs JavaScript.</p></noscript>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <defs><linearGradient id="lgm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D97757"/><stop offset=".5" stop-color="#8B7CF6"/><stop offset="1" stop-color="#10A37F"/></linearGradient></defs>
+        <rect x="1" y="1" width="30" height="30" rx="9" fill="url(#lgm)" opacity=".16"/>
+        <rect x="1.5" y="1.5" width="29" height="29" rx="8.5" fill="none" stroke="url(#lgm)" stroke-opacity=".55"/>
+        <path d="M16 8.2 L23.6 21 L8.4 21 Z" fill="none" stroke="#c9cfdb" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round"/>
+        <circle cx="16" cy="8.2" r="3" fill="#D97757"/><circle cx="23.6" cy="21" r="3" fill="#10A37F"/><circle cx="8.4" cy="21" r="3" fill="#8B7CF6"/>
+        <circle cx="16" cy="16.7" r="2.1" fill="#F5C451"/>
+      </svg>
+      <span class="wordmark">PALINOR</span>
+    </div>
+    <div class="proj" id="projBox" hidden>
+      <span class="proj-name" id="projName"></span>
+      <span class="proj-goal" id="projGoal"></span>
+    </div>
+    <div class="top-r">
+      <span class="live" id="live" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="liveText">Not connected</span></span>
+      <button class="btn sm" type="button" id="btnProject" aria-expanded="false" aria-controls="connect">Project</button>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Dashboard sections" id="tabs">
+    <button class="tab" role="tab" type="button" id="tab-overview" aria-controls="p-overview" data-tab="overview">Overview</button>
+    <button class="tab" role="tab" type="button" id="tab-pipeline" aria-controls="p-pipeline" data-tab="pipeline">Pipeline <span class="badge" id="b-pipeline" hidden></span></button>
+    <button class="tab" role="tab" type="button" id="tab-conflicts" aria-controls="p-conflicts" data-tab="conflicts">Conflicts <span class="badge" id="b-conflicts" hidden></span></button>
+    <button class="tab" role="tab" type="button" id="tab-debates" aria-controls="p-debates" data-tab="debates">Debates <span class="badge" id="b-debates" hidden></span></button>
+    <button class="tab" role="tab" type="button" id="tab-messages" aria-controls="p-messages" data-tab="messages">Messages <span class="badge" id="b-messages" hidden></span></button>
+    <button class="tab" role="tab" type="button" id="tab-graph" aria-controls="p-graph" data-tab="graph">Knowledge graph</button>
+    <button class="tab" role="tab" type="button" id="tab-tasks" aria-controls="p-tasks" data-tab="tasks">Tasks &amp; commands <span class="badge" id="b-tasks" hidden></span></button>
+    <button class="tab" role="tab" type="button" id="tab-chats" aria-controls="p-chats" data-tab="chats">Chats &amp; questions <span class="badge" id="b-chats" hidden></span></button>
+    <button class="tab" role="tab" type="button" id="tab-decisions" aria-controls="p-decisions" data-tab="decisions">Decisions <span class="badge" id="b-decisions" hidden></span></button>
+    <button class="tab" role="tab" type="button" id="tab-events" aria-controls="p-events" data-tab="events">Event stream</button>
+  </nav>
+</header>
+
+<div class="connect-wrap">
+  <section class="connect card" id="connect" aria-labelledby="connectTitle">
+    <div class="hero" id="hero">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="9" fill="url(#lgm)" opacity=".16"/>
+        <rect x="1.5" y="1.5" width="29" height="29" rx="8.5" fill="none" stroke="url(#lgm)" stroke-opacity=".55"/>
+        <path d="M16 8.2 L23.6 21 L8.4 21 Z" fill="none" stroke="#c9cfdb" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round"/>
+        <circle cx="16" cy="8.2" r="3" fill="#D97757"/><circle cx="23.6" cy="21" r="3" fill="#10A37F"/><circle cx="8.4" cy="21" r="3" fill="#8B7CF6"/>
+        <circle cx="16" cy="16.7" r="2.1" fill="#F5C451"/>
+      </svg>
+      <h1>Mission control for your AI team</h1>
+      <p>Watch Claude, ChatGPT and OpenCode sessions coordinate through one knowledge graph: who commands whom, what they argue about, how Laya decides.</p>
+    </div>
+    <h2 class="sr" id="connectTitle">Connect to a project</h2>
+    <form id="connectForm" autocomplete="off" novalidate>
+      <label class="lbl" for="inPid">Project id</label>
+      <input class="input" id="inPid" name="pid" placeholder="P-1a2b3c4d" spellcheck="false" autocomplete="off" maxlength="80">
+      <label class="lbl" for="inAdmin">Admin key</label>
+      <input class="input" id="inAdmin" name="admin" type="password" placeholder="admin key from palinor_create_project" spellcheck="false" autocomplete="off" maxlength="200">
+      <div class="row between" style="margin-top:14px">
+        <span class="hint">Kept in this browser tab only. Sent as a header, never in a URL.</span>
+        <span class="row gap-s"><button class="btn ghost sm" type="button" id="btnForget">Forget</button><button class="btn primary" type="submit" id="btnConnect">Connect</button></span>
+      </div>
+      <div class="errline" id="connectErr" role="alert" hidden></div>
+      <div class="warnbox" id="noKeyWarn" hidden>This page was opened without <span class="mono">?key=</span>. If the server uses a server key, open it as <span class="mono">/?key=&lt;server key&gt;</span>.</div>
+    </form>
+  </section>
+</div>
+
+<main id="main" tabindex="-1">
+  <!-- OVERVIEW -->
+  <section class="panel" role="tabpanel" id="p-overview" aria-labelledby="tab-overview" hidden>
+    <div id="r-proj"></div>
+    <div class="grid kpis mt" id="r-kpis"></div>
+    <div class="grid ov-main">
+      <article class="card">
+        <header class="card-h"><h2>Communication network</h2><span class="sub" id="netSub"></span></header>
+        <div class="net-wrap">
+          <svg id="net" viewBox="0 0 640 460" role="img" aria-labelledby="netTitle netDesc">
+            <title id="netTitle">Who talks to whom</title>
+            <desc id="netDesc"></desc>
+            <defs>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <marker id="arr-claude" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#D97757"/></marker>
+              <marker id="arr-chatgpt" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#10A37F"/></marker>
+              <marker id="arr-opencode" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8B7CF6"/></marker>
+              <marker id="arr-human" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#F472B6"/></marker>
+              <marker id="arr-laya" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#F5C451"/></marker>
+              <marker id="arr-orch" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#38BDF8"/></marker>
+              <marker id="arr-local" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#22D3EE"/></marker>
+              <marker id="arr-other" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker>
+            </defs>
+            <g id="netEdges"></g><g id="netNodes"></g><g id="netPulses"></g>
+          </svg>
+        </div>
+        <div id="r-netlegend"></div>
+      </article>
+      <div class="stack">
+        <article class="card"><header class="card-h"><h2>Needs attention</h2></header><div id="r-attn"></div></article>
+        <article class="card"><header class="card-h"><h2>Participants</h2><span class="sub" id="peopleSub"></span></header><div id="r-people"></div></article>
+      </div>
+    </div>
+    <div class="grid two">
+      <article class="card"><header class="card-h"><h2>Latest messages</h2><button class="linkbtn" type="button" data-goto="messages" style="margin-left:auto">All messages</button></header><div id="r-ovmsgs"></div></article>
+      <article class="card"><header class="card-h"><h2>Latest activity</h2><button class="linkbtn" type="button" data-goto="events" style="margin-left:auto">Event stream</button></header><div id="r-ovevents"></div></article>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="panel" role="tabpanel" id="p-pipeline" aria-labelledby="tab-pipeline" hidden>
+    <div class="sec-h"><h2>Division of labour</h2><p>One coordinator publishes a plan; PALINOR dispatches each task when its inputs are done and hands results downstream.</p></div>
+    <div id="r-pipeline"></div>
+  </section>
+
+  <!-- CONFLICTS -->
+  <section class="panel" role="tabpanel" id="p-conflicts" aria-labelledby="tab-conflicts" hidden>
+    <div class="sec-h"><h2>Conflicts with the knowledge graph</h2><p>Raised to the coordinator only, consulted with named participants, resolved with a Laya evidence audit.</p></div>
+    <div id="r-conflicts"></div>
+  </section>
+
+  <!-- DEBATES -->
+  <section class="panel" role="tabpanel" id="p-debates" aria-labelledby="tab-debates" hidden>
+    <div class="sec-h"><h2>Debates</h2><p>Perspectives, votes and syntheses. Laya decides; you can vote and break ties.</p></div>
+    <details class="card newdeb" id="newDebate">
+      <summary><span class="plus" aria-hidden="true">+</span>Open a new debate</summary>
+      <form id="debateForm" autocomplete="off" novalidate>
+        <div class="form-grid">
+          <div><label class="lbl" for="dQ">Question</label><input class="input" id="dQ" maxlength="2000" placeholder="e.g. Which feature store should we use?"></div>
+          <div><label class="lbl" for="dMode">Mode</label><select class="input" id="dMode"><option value="deliberative">Deliberative (votes + evidence)</option><option value="empirical">Empirical (needs experiments)</option></select></div>
+        </div>
+        <label class="lbl" for="dCtx">Context <span class="opt">optional</span></label>
+        <textarea class="input" id="dCtx" rows="2" maxlength="20000" placeholder="Constraints, links to findings, what a good answer must satisfy"></textarea>
+        <div class="row end" style="margin-top:12px"><button class="btn primary" type="submit" id="dGo">Open debate</button></div>
+      </form>
+    </details>
+    <div id="r-debates" class="mt"></div>
+  </section>
+
+  <!-- MESSAGES -->
+  <section class="panel" role="tabpanel" id="p-messages" aria-labelledby="tab-messages" hidden>
+    <div class="msgs-layout">
+      <article class="card compose">
+        <header class="card-h"><h2>Compose</h2><span class="sub">as You (dashboard)</span></header>
+        <form id="composeForm" autocomplete="off" novalidate>
+          <div class="reply-bar" id="replyBar" hidden><span id="replyText"></span><button class="btn ghost sm" type="button" id="replyCancel">Cancel reply</button></div>
+          <label class="lbl" for="cTo">To</label>
+          <select class="input" id="cTo"><option value="all">Everyone (broadcast)</option></select>
+          <label class="lbl" for="cKind">Kind</label>
+          <select class="input" id="cKind">
+            <option value="info">info</option><option value="question">question</option><option value="answer">answer</option>
+            <option value="request">request</option><option value="review">review</option><option value="context">context</option><option value="alert">alert</option>
+          </select>
+          <label class="lbl" for="cSubject">Subject <span class="opt">optional</span></label>
+          <input class="input" id="cSubject" maxlength="140">
+          <label class="lbl" for="cBody">Message</label>
+          <textarea class="input" id="cBody" rows="6" maxlength="20000" placeholder="Write to one participant or everyone. Participants treat it as data, not as an instruction to execute."></textarea>
+          <div class="row between" style="margin-top:12px"><span class="hint">Ctrl+Enter to send</span><button class="btn primary" type="submit" id="cSend">Send</button></div>
+          <p class="hint" style="margin:10px 0 0">Identical messages within 10 minutes are suppressed and broadcasts are limited, so address people directly when it concerns only them.</p>
+        </form>
+      </article>
+      <div>
+        <div class="filters" role="search">
+          <select class="input sm" id="mPerson" aria-label="Show messages involving"><option value="">Everyone</option></select>
+          <div class="kchips" id="mKinds" role="group" aria-label="Filter by kind"></div>
+          <input class="input sm" id="mSearch" type="search" placeholder="Search messages" aria-label="Search messages" style="flex:1;min-width:150px">
+        </div>
+        <div id="r-msgs"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRAPH -->
+  <section class="panel" role="tabpanel" id="p-graph" aria-labelledby="tab-graph" hidden>
+    <div class="g-tools" id="r-gchips"></div>
+    <div class="g-layout">
+      <div class="g-canvas" id="gcanvas">
+        <svg id="gsvg" tabindex="0" role="application" aria-label="Knowledge graph. Drag to pan, wheel or plus and minus keys to zoom, arrow keys to pan, 0 to fit. Use the search box to select a node.">
+          <g id="gview"><g id="gedges"></g><g id="gnodes"></g></g>
+        </svg>
+        <div class="g-count" id="gcount" aria-live="polite"></div>
+        <div class="g-hud">
+          <button class="btn sm" type="button" id="gZoomIn" aria-label="Zoom in">+</button>
+          <button class="btn sm" type="button" id="gZoomOut" aria-label="Zoom out">&minus;</button>
+          <button class="btn sm" type="button" id="gFit">Fit</button>
+          <button class="btn sm" type="button" id="gRelayout">Re-layout</button>
+        </div>
+      </div>
+      <aside class="card gd" aria-label="Node details">
+        <input class="input sm" id="gSearch" type="search" placeholder="Find a node by id or text" aria-label="Find a node">
+        <div id="r-gresults"></div>
+        <div id="r-gdetail"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- TASKS -->
+  <section class="panel" role="tabpanel" id="p-tasks" aria-labelledby="tab-tasks" hidden>
+    <div class="sec-h"><h2>Task DAG</h2></div>
+    <div id="r-tasks"></div>
+    <div class="sec-h mt"><h2>Command pipeline</h2><p>Last 50 commands, newest first.</p></div>
+    <div id="r-cmds"></div>
+  </section>
+
+  <!-- CHATS -->
+  <section class="panel" role="tabpanel" id="p-chats" aria-labelledby="tab-chats" hidden>
+    <div class="sec-h"><h2>Ingested chats &amp; notes</h2></div>
+    <div id="r-convs"></div>
+    <div class="sec-h mt"><h2>Open questions</h2></div>
+    <div id="r-questions"></div>
+    <article class="card export mt">
+      <header class="card-h"><h2>PALINOR.md export</h2><span class="sub">the digest participants write to their repositories</span></header>
+      <div class="row wrap"><button class="btn sm" type="button" id="exLoad">Preview</button><button class="btn sm" type="button" id="exDownload">Download PALINOR.md</button></div>
+      <pre id="exPre" hidden></pre>
+    </article>
+  </section>
+
+  <!-- DECISIONS -->
+  <section class="panel" role="tabpanel" id="p-decisions" aria-labelledby="tab-decisions" hidden>
+    <div class="sec-h"><h2>Decisions timeline</h2><p>Laya decisions, tie-breaks and conflict resolutions, newest first.</p></div>
+    <div id="r-decisions"></div>
+  </section>
+
+  <!-- EVENTS -->
+  <section class="panel" role="tabpanel" id="p-events" aria-labelledby="tab-events" hidden>
+    <div class="filters">
+      <div class="kchips" id="r-evchips" role="group" aria-label="Filter by topic"></div>
+      <label class="row sm muted" style="gap:6px"><input type="checkbox" id="evHideReads" checked> Hide read receipts</label>
+      <input class="input sm" id="evSearch" type="search" placeholder="Filter events" aria-label="Filter events" style="flex:1;min-width:150px">
+      <button class="btn sm" type="button" id="evPause" aria-pressed="false">Pause</button>
+    </div>
+    <article class="card" style="padding:6px 12px"><div id="r-events"></div></article>
+  </section>
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* =====================================================================================
+   PALINOR dashboard. Every string from the server was written by a participant and is
+   treated as untrusted: it only ever reaches the DOM through textContent / DOM properties.
+   No innerHTML, no eval, class names only from the fixed allow-lists below, links never
+   built from data.
+   ===================================================================================== */
+
+// ------------------------------------------------------------------ utils
+const $ = (id) => document.getElementById(id);
+const own = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
+const str = (v) => (v === null || v === undefined) ? '' : String(v);
+const arr = (v) => Array.isArray(v) ? v : [];
+const num = (v, d = 0) => (typeof v === 'number' && isFinite(v)) ? v : d;
+const clip = (s, n) => { s = str(s); return s.length > n ? s.slice(0, Math.max(0, n - 1)) + '…' : s; };
+const pct = (x) => Math.max(0, Math.min(100, Math.round(num(x) * 1000) / 10)) + '%';
+const fmt = (x, d = 2) => num(x).toFixed(d);
+const uniq = (a) => Array.from(new Set(a));
+const RM = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+
+const SAFE_ATTR = new Set(['role', 'tabindex', 'type', 'id', 'for', 'name', 'placeholder', 'maxlength', 'rows', 'min', 'max',
+  'step', 'autocomplete', 'spellcheck', 'colspan', 'scope', 'datetime', 'inputmode']);
+
+function add(el, kids) {
+  for (const c of kids) {
+    if (c === null || c === undefined || c === false || c === '') continue;
+    if (Array.isArray(c)) add(el, c);
+    else if (c instanceof Node) el.appendChild(c);
+    else el.appendChild(document.createTextNode(String(c)));
+  }
+}
+/** DOM builder: strings become text nodes, attributes go through DOM properties / setAttribute only. */
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  if (props) {
+    for (const k of Object.keys(props)) {
+      const v = props[k];
+      if (v === undefined || v === null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = str(v);
+      else if (k === 'title') el.title = str(v);
+      else if (k === 'value') el.value = str(v);
+      else if (k === 'on') { for (const ev of Object.keys(v)) el.addEventListener(ev, v[ev]); }
+      else if (k === 'data') { for (const d of Object.keys(v)) el.dataset[d] = str(v[d]); }
+      else if (k === 'style') { for (const s of Object.keys(v)) el.style.setProperty(s, str(v[s])); }
+      else if (k === 'checked' || k === 'disabled' || k === 'selected') el[k] = !!v;
+      else if (SAFE_ATTR.has(k) || k.startsWith('aria-')) el.setAttribute(k, str(v));
+      else throw new Error('attribute not allowed: ' + k);
+    }
+  }
+  add(el, kids);
+  return el;
+}
+const SVGNS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, ...kids) {
+  const el = document.createElementNS(SVGNS, tag);
+  if (attrs) {
+    for (const k of Object.keys(attrs)) {
+      const v = attrs[k];
+      if (v === undefined || v === null) continue;
+      if (k === 'text') el.textContent = str(v);
+      else if (k === 'on') { for (const ev of Object.keys(v)) el.addEventListener(ev, v[ev]); }
+      else el.setAttribute(k, typeof v === 'number' ? String(Math.round(v * 100) / 100) : v);
+    }
+  }
+  add(el, kids);
+  return el;
+}
+
+const store = {
+  get(k) { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } },
+  set(k, v) { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (e) { /* storage blocked */ } },
+};
+
+// ------------------------------------------------------------------ time
+const ts = (iso) => { const t = Date.parse(str(iso)); return isFinite(t) ? t : 0; };
+function relMs(t) {
+  if (!t) return '';
+  let s = Math.round((Date.now() - t) / 1000);
+  if (s < 0) s = 0;
+  if (s < 5) return 'just now';
+  if (s < 60) return s + 's ago';
+  const m = Math.floor(s / 60); if (m < 60) return m + 'm ago';
+  const hh = Math.floor(m / 60); if (hh < 24) return hh + 'h ago';
+  return Math.floor(hh / 24) + 'd ago';
+}
+function timeEl(iso) {
+  const t = ts(iso);
+  if (!t) return null;
+  return h('time', { class: 't', title: new Date(t).toLocaleString(), datetime: new Date(t).toISOString(), data: { ts: String(t) } }, relMs(t));
+}
+
+// ------------------------------------------------------------------ allow-listed class keys
+const PF = { claude: 'claude', chatgpt: 'chatgpt', openai: 'chatgpt', gpt: 'chatgpt', opencode: 'opencode', human: 'human',
+  'local-llm': 'local', localllm: 'local', local: 'local', laya: 'laya', orchestrator: 'orch' };
+const PFCOL = { claude: '#D97757', chatgpt: '#10A37F', opencode: '#8B7CF6', human: '#F472B6', laya: '#F5C451', orch: '#38BDF8', local: '#22D3EE', other: '#94a3b8' };
+function pfKey(platform) {
+  const k = str(platform).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return own(PF, k) ? PF[k] : 'other';
+}
+const ST = {};
+[['st-ok', 'COMPLETED ONLINE SELECTED RESOLVED DECIDED TIEBREAK CONFIRMED SUCCEEDED MERGED PASSED'],
+ ['st-run', 'RUNNING ACCEPTED ASSIGNED DELIVERED QUEUED RETRY_QUEUED CONSULTING OPEN READY AUTHORIZED CREATED DEFERRED'],
+ ['st-warn', 'BLOCKED NEED_VOTES SYNTHESIZE NEED_EVIDENCE VERIFY NEED_PERSPECTIVES UNVERIFIED CANCEL_REQUESTED ATTENTION DISPUTED'],
+ ['st-hot', 'ESCALATE ESCALATED'],
+ ['st-bad', 'FAILED REJECTED EXPIRED CANCELLED OFFLINE'],
+ ['st-info', 'RESOLVED_BY_COORDINATOR DELIBERATIVE EMPIRICAL'],
+ ['st-mute', 'SUPERSEDED WITHDRAWN ALREADY_DECIDED']].forEach(([c, words]) => words.split(' ').forEach(w => { ST[w] = c; }));
+const stCls = (s) => { const k = str(s).toUpperCase(); return own(ST, k) ? ST[k] : 'st-mute'; };
+const KINDS = ['info', 'question', 'answer', 'context', 'request', 'review', 'decision', 'alert'];
+const kCls = (k) => KINDS.includes(str(k)) ? 'k-' + k : 'k-info';
+const POS = { keep: 'pos-keep', accept_challenge: 'pos-accept', merge: 'pos-merge', unsure: 'pos-unsure' };
+const posCls = (p) => own(POS, str(p)) ? POS[p] : 'pos-unsure';
+const TOPICS = [['PROJECT_', 'project'], ['PARTICIPANT_', 'participant'], ['TASK_', 'task'], ['COMMAND_', 'command'],
+  ['CONTEXT_', 'context'], ['CONVERSATION_', 'context'], ['MESSAGE_', 'message'], ['DEBATE_', 'decision'], ['SYNTHESIS_', 'decision'],
+  ['LAYA_', 'decision'], ['CONFLICT_', 'decision'], ['PLAN_', 'task'], ['FINDING_', 'finding'], ['EVIDENCE_', 'finding'],
+  ['PROPOSAL_', 'decision'], ['ARGUMENT_', 'decision'], ['VOTE_', 'decision'], ['CONTRADICTION_', 'decision'],
+  ['VERIFICATION_', 'decision'], ['DECISION_', 'decision'], ['EXPERIMENT_', 'experiment'], ['EXECUTION_', 'execution'],
+  ['GITHUB_', 'github'], ['PULL_REQUEST_', 'github'], ['ERROR', 'error']];
+const TOPIC_NAMES = ['message', 'task', 'command', 'decision', 'context', 'finding', 'participant', 'project', 'github', 'experiment', 'execution', 'error', 'other'];
+function topicOf(type) { const t = str(type); for (const [p, n] of TOPICS) if (t.startsWith(p)) return n; return 'other'; }
+const GCOL = { Project: '#F8FAFC', Laya: '#F5C451', Task: '#38BDF8', Plan: '#0EA5E9', Command: '#94A3B8', Message: '#64748B',
+  Finding: '#34D399', Evidence: '#A3E635', Proposal: '#A78BFA', Vote: '#C4B5FD', Debate: '#E879F9', Decision: '#FACC15',
+  Contradiction: '#FB7185', Conflict: '#F87171', Opinion: '#FDBA74', Conversation: '#2DD4BF', OpenQuestion: '#FDE047',
+  GitHubCommit: '#9CA3AF', PullRequest: '#D1D5DB', Argument: '#F0ABFC', Experiment: '#67E8F9', Result: '#5EEAD4', Artifact: '#CBD5E1' };
+const gColor = (n) => n.label === 'Participant' ? PFCOL[pfKey(n.platform)] : (own(GCOL, n.label) ? GCOL[n.label] : '#8B93A5');
+const OPEN_CMD = new Set(['QUEUED', 'DELIVERED', 'ACCEPTED', 'RUNNING', 'CANCEL_REQUESTED', 'RETRY_QUEUED', 'CREATED', 'AUTHORIZED']);
+const SYSTEM_IDS = new Set(['laya', 'orchestrator', 'system', 'user']);
+
+// ------------------------------------------------------------------ state
+const KEY = (() => { try { return new URLSearchParams(location.search).get('key') || ''; } catch (e) { return ''; } })();
+const TAB_LIST = ['overview', 'pipeline', 'conflicts', 'debates', 'messages', 'graph', 'tasks', 'chats', 'decisions', 'events'];
+const S = {
+  pid: store.get('palinor.pid'), admin: store.get('palinor.admin'), gen: 0,
+  ov: null, pl: null, cf: null, graph: null, graphSig: '', graphAt: 0, graphBusy: false,
+  err: null, okAt: 0, timer: 0, polling: false, pollAgain: false,
+  tab: 'overview', people: new Map(), sigs: new Map(), open: new Set(),
+  seenMsgs: null, pendingPulses: [], newMsgs: 0, events: new Map(), netGeo: null,
+  msgF: { person: '', kinds: new Set(), q: '' }, evF: { off: new Set(), hideReads: true, q: '', paused: false, frozen: null },
+  reply: null, exportText: '',
+};
+const humanId = () => 'human-' + S.pid;
+
+// ------------------------------------------------------------------ people
+function who(id, fallbackName) {
+  id = str(id);
+  if (!id) return { id: '', name: '—', pf: 'other' };
+  const p = S.people.get(id);
+  if (p) return { id, name: str(p.name) || id, pf: pfKey(p.platform), role: str(p.role), status: str(p.status) };
+  if (id === 'laya' || id.startsWith('LAYA-')) return { id, name: 'Laya', pf: 'laya', role: 'decision engine' };
+  if (id === 'orchestrator') return { id, name: 'Orchestrator', pf: 'orch', role: 'dispatcher' };
+  if (id === 'system') return { id, name: 'System', pf: 'other' };
+  if (id === 'user') return { id, name: 'User', pf: 'human' };
+  if (id.startsWith('human-')) return { id, name: 'You (dashboard)', pf: 'human', role: 'human' };
+  return { id, name: str(fallbackName) || id, pf: 'other' };
+}
+const PF_LETTER = { claude: 'C', chatgpt: 'G', opencode: 'O', local: 'L', laya: 'L', orch: 'Or', human: 'You' };
+function initials(w) {
+  if (w.pf === 'laya' || w.pf === 'orch' || w.pf === 'human') return PF_LETTER[w.pf];
+  const m = /-(\d{1,2})$/.exec(w.name);
+  let base = own(PF_LETTER, w.pf) ? PF_LETTER[w.pf] : '';
+  if (!base) { const c = (/[A-Za-z0-9]/.exec(w.name) || ['?'])[0]; base = c.toUpperCase(); }
+  return base + (m ? m[1] : '');
+}
+function avatar(w, sm) { return h('span', { class: 'av pf-' + w.pf + (sm ? ' sm' : ''), 'aria-hidden': 'true', text: initials(w) }); }
+function person(id, opt) {
+  opt = opt || {};
+  const w = who(id, opt.name);
+  return h('span', { class: 'who pf-' + w.pf + (opt.sm ? ' sm' : ''), title: w.name + (w.id && w.id !== w.name ? ' · ' + w.id : '') + (w.role ? ' · ' + w.role : '') },
+    avatar(w, opt.sm), opt.noName ? null : h('span', { class: 'who-n', text: w.name }));
+}
+const byPerson = (a, b) => (a.role === 'coordinator' ? 0 : a.role === 'human' ? 2 : 1) - (b.role === 'coordinator' ? 0 : b.role === 'human' ? 2 : 1)
+  || str(a.name).localeCompare(str(b.name), undefined, { numeric: true });
+function humanize(text) {  // participant ids -> names inside server-written sentences (still plain text)
+  let t = str(text);
+  for (const [id, p] of S.people) if (id && p && p.name && t.includes(id)) t = t.split(id).join(str(p.name));
+  return t;
+}
+const peopleSig = () => S.ov ? S.ov.participants.map(p => [p.id, p.name, p.status, p.role, p.platform]) : [];
+
+// ------------------------------------------------------------------ small components
+function chip(text, cls, title) { return h('span', { class: 'chip ' + (cls || stCls(text)), title }, str(text)); }
+function idTag(id) { return id ? h('span', { class: 'mono idt', title: str(id), text: clip(id, 24) }) : null; }
+function empty(title, text) {
+  return h('div', { class: 'empty' }, h('div', { class: 'empty-ic', 'aria-hidden': 'true' }), h('p', { class: 'empty-t', text: title }),
+    text ? h('p', { class: 'empty-s', text }) : null);
+}
+function moreToggle(key, label) {
+  const openNow = S.open.has(key);
+  return h('button', { class: 'linkbtn', type: 'button', 'aria-expanded': String(openNow), data: { fkey: 'more-' + key },
+    on: { click: () => { if (S.open.has(key)) S.open.delete(key); else S.open.add(key); rerender(); } } },
+  openNow ? 'Show less' : (label || 'Show more'));
+}
+function longText(key, text, limit, cls) {
+  const t = str(text);
+  if (t.length <= limit) return h('div', { class: cls, text: t });
+  const openNow = S.open.has(key);
+  return h('div', {}, h('div', { class: cls, text: openNow ? t : clip(t, limit) }), moreToggle(key));
+}
+
+/** Re-render a data region only when its data changed; keeps typed input, focus and inner scroll. */
+function patch(el, sigData, build, force) {
+  if (!el) return;
+  const sig = typeof sigData === 'string' ? sigData : JSON.stringify(sigData);
+  if (!force && S.sigs.get(el.id) === sig) return;
+  S.sigs.set(el.id, sig);
+  const keep = new Map();
+  el.querySelectorAll('[data-keep]').forEach(x => keep.set(x.dataset.keep, (x.type === 'checkbox' || x.type === 'radio') ? x.checked : x.value));
+  const act = document.activeElement;
+  let fk = null, sa = null, sb = null;
+  if (act && act !== el && el.contains(act)) {
+    fk = act.dataset ? (act.dataset.keep || act.dataset.fkey || null) : null;
+    try { if (typeof act.selectionStart === 'number') { sa = act.selectionStart; sb = act.selectionEnd; } } catch (e) { /* not a text field */ }
+  }
+  const scrolls = [];
+  el.querySelectorAll('[data-scroll]').forEach(x => scrolls.push([x.dataset.scroll, x.scrollTop]));
+  const frag = document.createDocumentFragment();
+  add(frag, [build()]);
+  el.replaceChildren(frag);
+  if (keep.size) el.querySelectorAll('[data-keep]').forEach(x => {
+    if (!keep.has(x.dataset.keep)) return;
+    const v = keep.get(x.dataset.keep);
+    if (x.type === 'checkbox' || x.type === 'radio') x.checked = v; else x.value = v;
+  });
+  for (const [k, top] of scrolls) { const x = el.querySelector('[data-scroll="' + CSS.escape(k) + '"]'); if (x) x.scrollTop = top; }
+  if (fk) {
+    const x = el.querySelector('[data-keep="' + CSS.escape(fk) + '"], [data-fkey="' + CSS.escape(fk) + '"]');
+    if (x) { x.focus({ preventScroll: true }); if (sa !== null) { try { x.setSelectionRange(sa, sb); } catch (e) { /* ignore */ } } }
+  }
+}
+
+// ------------------------------------------------------------------ toasts
+function toast(msg, tone) {
+  const t = h('div', { class: 'toast ' + ({ ok: 'st-ok', warn: 'st-warn', bad: 'st-bad', info: 'st-info' }[tone] || 'st-info'), role: 'status' }, h('span', { text: msg }));
+  t.style.setProperty('--c', 'var(--c)');
+  $('toasts').appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, tone === 'bad' ? 7000 : 4200);
+}
+
+// ------------------------------------------------------------------ API
+class ApiError extends Error {
+  constructor(status, detail, write) {
+    const fixed = { 401: 'Server key rejected. Open this page as /?key=<server key>.', 403: 'Admin key rejected for this project.',
+      404: 'Project not found on this server.', 422: 'The admin key is missing.' };
+    super(write && detail ? clip(detail, 300) : (fixed[status] || (detail ? clip(detail, 300) : 'HTTP ' + status)));
+    this.status = status;
+    this.fatal = !write && own(fixed, status);
+  }
+}
+function netError(e) {
+  const err = new Error(e && e.name === 'AbortError' ? 'Request timed out' : 'Server unreachable');
+  err.status = 0; err.fatal = false;
+  return err;
+}
+async function api(path, opt) {
+  opt = opt || {};
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), opt.timeout || 15000);
+  const headers = { Accept: opt.text ? 'text/plain' : 'application/json' };
+  if (KEY) headers.Authorization = 'Bearer ' + KEY;
+  if (S.admin) headers['X-Palinor-Admin'] = S.admin;
+  if (opt.body !== undefined) headers['Content-Type'] = 'application/json';
+  let r;
+  try {
+    r = await fetch('/api/projects/' + encodeURIComponent(S.pid) + path, {
+      method: opt.method || 'GET', headers, body: opt.body !== undefined ? JSON.stringify(opt.body) : undefined,
+      cache: 'no-store', credentials: 'same-origin', redirect: 'error', referrerPolicy: 'no-referrer', signal: ctl.signal });
+  } catch (e) {
+    clearTimeout(timer);
+    throw netError(e);
+  }
+  try {
+    if (!r.ok) {
+      let detail = '';
+      try { const j = await r.json(); detail = typeof j.detail === 'string' ? j.detail : (typeof j.error === 'string' ? j.error : ''); } catch (e) { /* not JSON */ }
+      throw new ApiError(r.status, detail, !!opt.method && opt.method !== 'GET');
+    }
+    return opt.text ? await r.text() : await r.json();
+  } finally { clearTimeout(timer); }
+}
+async function post(path, body, btn) {
+  if (btn) btn.disabled = true;
+  try { return await api(path, { method: 'POST', body }); }
+  finally { if (btn) btn.disabled = false; }
+}
+
+// ------------------------------------------------------------------ polling
+function normalise(o) {
+  return { project: (o && typeof o.project === 'object' && o.project) || {}, participants: arr(o.participants), tasks: arr(o.tasks),
+    commands: arr(o.commands), findings: num(o.findings), proposals: arr(o.proposals), contradictions: arr(o.contradictions),
+    decisions: arr(o.decisions), debates: arr(o.debates), messages: arr(o.messages), conversations: arr(o.conversations),
+    open_questions: arr(o.open_questions), conflicts: arr(o.conflicts), events: arr(o.events),
+    graph: (o && typeof o.graph === 'object' && o.graph) || {} };
+}
+function ingest(o) {
+  const ov = normalise(o || {});
+  S.ov = ov;
+  S.people = new Map(ov.participants.filter(p => p && typeof p.id === 'string').map(p => [p.id, p]));
+  for (const e of ov.events) if (e && typeof e.seq === 'number') S.events.set(e.seq, e);
+  if (S.events.size > 900) { const ks = Array.from(S.events.keys()).sort((a, b) => a - b); ks.slice(0, S.events.size - 900).forEach(k => S.events.delete(k)); }
+  const msgs = ov.messages.filter(m => m && typeof m.message_id === 'string');
+  if (!S.seenMsgs) {
+    S.seenMsgs = new Set(msgs.map(m => m.message_id));
+    const cut = Date.now() - 120000;
+    S.pendingPulses = msgs.filter(m => ts(m.created_at) > cut).slice(-6);
+  } else {
+    const fresh = msgs.filter(m => !S.seenMsgs.has(m.message_id));
+    fresh.forEach(m => S.seenMsgs.add(m.message_id));
+    S.pendingPulses = S.pendingPulses.concat(fresh).slice(-14);
+    if (fresh.length && S.tab !== 'messages') S.newMsgs += fresh.length;
+  }
+}
+async function poll() {
+  if (S.polling) { S.pollAgain = true; return; }
+  clearTimeout(S.timer); S.timer = 0;
+  if (!S.pid || !S.admin) { render(); return; }
+  const gen = S.gen;
+  S.polling = true;
+  try {
+    const [ov, pl, cf] = await Promise.allSettled([api('/overview'), api('/pipeline'), api('/conflicts')]);
+    if (gen !== S.gen) return;
+    if (ov.status === 'fulfilled' && ov.value && typeof ov.value === 'object') { ingest(ov.value); S.err = null; S.okAt = Date.now(); }
+    else S.err = ov.reason instanceof Error ? ov.reason : netError();
+    if (pl.status === 'fulfilled' && pl.value && typeof pl.value === 'object') S.pl = pl.value;
+    if (cf.status === 'fulfilled' && cf.value && typeof cf.value === 'object') S.cf = cf.value;
+    render();
+    flushPulses();
+    if (S.ov && Date.now() - S.graphAt > (S.tab === 'graph' ? 10000 : 30000)) loadGraph();
+  } catch (e) {
+    console.error(e);
+  } finally {
+    S.polling = false;
+    const again = S.pollAgain || gen !== S.gen;
+    S.pollAgain = false;
+    clearTimeout(S.timer);
+    if (again) S.timer = setTimeout(poll, 0);
+    else if (!(S.err && S.err.fatal) && S.pid && S.admin) S.timer = setTimeout(poll, document.hidden ? 15000 : 3000);
+  }
+}
+function refreshSoon() { if (S.polling) S.pollAgain = true; else { clearTimeout(S.timer); S.timer = setTimeout(poll, 60); } }
+async function loadGraph() {
+  if (S.graphBusy || !S.pid || !S.admin) return;
+  S.graphBusy = true;
+  const gen = S.gen;
+  try {
+    const g = await api('/graph?limit=400', { timeout: 20000 });
+    if (gen !== S.gen) return;
+    const nodes = arr(g && g.nodes).filter(n => n && typeof n.id === 'string');
+    const edges = arr(g && g.edges).filter(e => e && typeof e.source === 'string' && typeof e.target === 'string');
+    S.graph = { nodes, edges };
+    S.graphSig = JSON.stringify([nodes.map(n => [n.id, n.label, n.text, n.status]), edges.length]);
+    S.graphAt = Date.now();
+    if (S.tab === 'graph' || S.tab === 'overview') render();
+  } catch (e) {
+    S.graphAt = Date.now();
+    if (gen === S.gen && S.tab === 'graph' && !S.graph) patch($('r-gchips'), 'err' + e.message, () => h('span', { class: 'muted', text: 'Graph unavailable: ' + e.message }), true);
+  } finally { S.graphBusy = false; }
+}
+
+// ------------------------------------------------------------------ chrome: header, connect, tabs
+function renderChrome() {
+  const connected = !!(S.pid && S.admin);
+  document.body.classList.toggle('disconnected', !S.ov);
+  if (!S.ov) { $('connect').hidden = false; S.autoConnect = true; }
+  else if (S.autoConnect) { $('connect').hidden = true; S.autoConnect = false; }  // close once data arrives
+  $('btnProject').hidden = !S.ov;
+  $('hero').hidden = !!S.ov;
+  let state = 'idle', text = 'Not connected';
+  if (connected) {
+    if (S.err && S.err.fatal) { state = 'err'; text = S.err.message; }
+    else if (S.err) { state = 'warn'; text = 'Reconnecting · ' + S.err.message; }
+    else if (S.okAt) { state = 'ok'; text = 'Live · updated ' + relMs(S.okAt); }
+    else { state = 'warn'; text = 'Connecting…'; }
+  }
+  $('live').className = 'live live-' + state;
+  $('liveText').textContent = text;
+  const ce = $('connectErr');
+  ce.hidden = !(S.err && S.err.fatal);
+  ce.textContent = S.err && S.err.fatal ? S.err.message : '';
+  const p = S.ov && S.ov.project;
+  $('projBox').hidden = !p;
+  if (p) {
+    $('projName').textContent = str(p.name) || str(p.project_id);
+    $('projName').title = str(p.project_id);
+    $('projGoal').textContent = str(p.goal);
+    $('projGoal').title = str(p.goal);
+    document.title = clip(str(p.name) || 'Project', 60) + ' · PALINOR';
+  } else document.title = 'PALINOR Dashboard';
+  for (const t of TAB_LIST) $('p-' + t).hidden = !S.ov || S.tab !== t;
+  $('tabs').hidden = !S.ov;
+  if (S.ov) badges();
+}
+function setBadge(tab, n, tone) {
+  const b = $('b-' + tab);
+  if (!b) return;
+  b.hidden = !n;
+  b.textContent = n ? String(n) : '';
+  b.className = 'badge' + (tone ? ' ' + tone : '');
+}
+function badges() {
+  const ov = S.ov;
+  const openConf = ov.conflicts.filter(c => c.status === 'open' || c.status === 'consulting').length;
+  setBadge('conflicts', openConf, 'hot');
+  const needs = ov.debates.filter(d => d.status !== 'decided' && d.laya && d.laya !== 'DECIDED').length;
+  const esc = ov.debates.some(d => d.laya === 'ESCALATE');
+  setBadge('debates', needs, esc ? 'hot' : 'warn');
+  setBadge('messages', S.newMsgs, 'new');
+  const running = ov.tasks.filter(t => t.status === 'RUNNING').length;
+  setBadge('pipeline', running, '');
+  const failed = ov.tasks.filter(t => t.status === 'FAILED').length;
+  setBadge('tasks', failed, 'hot');
+  setBadge('chats', ov.open_questions.length, '');
+  setBadge('decisions', ov.decisions.length, '');
+}
+function selectTab(name, focusTab) {
+  if (!TAB_LIST.includes(name)) name = 'overview';
+  S.tab = name;
+  for (const t of TAB_LIST) {
+    const b = $('tab-' + t), on = t === name;
+    b.setAttribute('aria-selected', String(on));
+    b.tabIndex = on ? 0 : -1;
+  }
+  if (focusTab) $('tab-' + name).focus();
+  if (name === 'messages') S.newMsgs = 0;
+  try { history.replaceState(null, '', location.pathname + location.search + '#' + name); } catch (e) { /* ignore */ }
+  render();
+  if (name !== 'graph') graphStop();
+  if (name !== 'overview') S.pendingPulses = [];
+}
+function rerender() { S.sigs.clear(); render(); }
+function render() {
+  renderChrome();
+  if (!S.ov) return;
+  const fn = RENDER[S.tab];
+  try { fn(); } catch (e) { console.error('render ' + S.tab, e); }
+}
+
+// ------------------------------------------------------------------ OVERVIEW
+function renderOverview() {
+  const ov = S.ov, p = ov.project;
+  patch($('r-proj'), [p.name, p.goal, p.requirements, p.constraints, p.status], () => h('article', { class: 'card proj-card' },
+    h('div', { class: 'row between wrap' }, h('h1', { text: str(p.name) || str(p.project_id) }), h('span', { class: 'row gap-s' }, chip(p.status || 'active', 'st-ok'), idTag(p.project_id))),
+    p.goal ? h('p', { text: p.goal }) : null,
+    (arr(p.requirements).length || arr(p.constraints).length) ? h('div', { class: 'reqs' },
+      arr(p.requirements).map(r => h('span', { class: 'chip st-info', title: 'Requirement' }, '✓ ' + clip(r, 80))),
+      arr(p.constraints).map(c => h('span', { class: 'chip st-mute', title: 'Constraint' }, '◇ ' + clip(c, 80)))) : null));
+
+  const parts = ov.participants.filter(x => x.role !== 'human');
+  const online = parts.filter(x => x.status === 'online').length;
+  const done = ov.tasks.filter(t => t.status === 'COMPLETED').length;
+  const plans = S.pl ? arr(S.pl.plans) : [];
+  const planPct = plans.length ? plans.reduce((a, x) => a + num(x.percent), 0) / plans.length : null;
+  const openCmds = ov.commands.filter(c => OPEN_CMD.has(c.status)).length;
+  const debOpen = ov.debates.filter(d => d.status !== 'decided');
+  const esc = debOpen.filter(d => d.laya === 'ESCALATE').length;
+  const confOpen = ov.conflicts.filter(c => c.status === 'open' || c.status === 'consulting').length;
+  const gN = S.graph ? S.graph.nodes.length : null, gE = S.graph ? S.graph.edges.length : null;
+  const k = [
+    ['Participants', online + '/' + parts.length, 'online now', online ? 'ok' : 'mute', 'overview', null],
+    ['Plan progress', planPct === null ? '—' : Math.round(planPct) + '%', plans.length ? plans.length + ' plan' + (plans.length > 1 ? 's' : '') + ' · ' + plans.map(x => x.progress).join(', ') : 'no plan yet', 'ok', 'pipeline', planPct],
+    ['Tasks', done + '/' + ov.tasks.length, ov.tasks.filter(t => t.status === 'RUNNING').length + ' running', 'run', 'tasks', ov.tasks.length ? done / ov.tasks.length * 100 : null],
+    ['Open commands', String(openCmds), ov.commands.length + ' in pipeline', openCmds ? 'run' : 'mute', 'tasks', null],
+    ['Messages', String(ov.messages.length), ov.messages.filter(m => arr(m.to).includes('all')).length + ' broadcasts', 'syn', 'messages', null],
+    ['Debates', String(debOpen.length), esc ? esc + ' need a tie-break' : debOpen.length ? 'in progress' : 'all decided', esc ? 'hot' : debOpen.length ? 'warn' : 'ok', 'debates', null],
+    ['Conflicts', String(confOpen), ov.conflicts.length + ' raised in total', confOpen ? 'hot' : 'ok', 'conflicts', null],
+    ['Decisions', String(ov.decisions.length), ov.findings + ' findings', 'warn', 'decisions', null],
+    ['Knowledge graph', gN === null ? '—' : (gN >= 400 ? '400+' : String(gN)), gE === null ? 'loading' : gE + ' relations', 'info', 'graph', null],
+  ];
+  patch($('r-kpis'), k, () => k.map(([label, value, sub, tone, tab, bar]) => h('button', { class: 'kpi tone-' + tone, type: 'button', data: { fkey: 'kpi-' + label },
+    on: { click: () => selectTab(tab, true) }, 'aria-label': label + ': ' + value + ', ' + sub },
+  h('span', { class: 'kpi-l', text: label }), h('span', { class: 'kpi-v', text: value }), h('span', { class: 'kpi-s', text: sub }),
+  bar !== null && bar !== undefined ? h('span', { class: 'kpi-bar' }, h('span', { style: { width: pct(bar / 100) } })) : null)));
+
+  renderNet();
+  patch($('r-attn'), [peopleSig(), ov.debates.map(d => [d.debate_id, d.status, d.laya, d.detail && d.detail.laya_preview && d.detail.laya_preview.pending_votes]),
+    ov.conflicts.map(c => [c.id, c.status]), ov.tasks.map(t => [t.id, t.status]), plans.map(x => [x.plan_id, x.status]),
+    ov.commands.map(c => [c.command_id, c.status])], attention);
+  $('peopleSub').textContent = online + ' online';
+  patch($('r-people'), peopleSig().concat([ov.participants.map(x => [x.last_seen ? Math.floor(ts(x.last_seen) / 60000) : 0, x.capabilities])]), peopleList);
+  const lastMsgs = ov.messages.slice(-7).reverse();
+  patch($('r-ovmsgs'), [lastMsgs.map(m => m.message_id), peopleSig()], () => lastMsgs.length ? h('ul', { class: 'feed' }, lastMsgs.map(m => h('li', {},
+    avatar(who(m.sender, m.sender_name)),
+    h('div', { class: 'fl' }, h('strong', { text: who(m.sender, m.sender_name).name, title: str(m.sender) }), h('span', { class: 'muted', 'aria-hidden': 'true', text: '→' }),
+      recipients(m.to, true), chip(m.kind, kCls(m.kind))),
+    timeEl(m.created_at),
+    h('div', { class: 'fx', text: clip(m.subject || m.body, 140), title: clip(m.body, 600) })))) : empty('No messages yet'));
+  const evs = Array.from(S.events.values()).filter(e => e.event_type !== 'MESSAGE_READ').sort((a, b) => b.seq - a.seq).slice(0, 8);
+  patch($('r-ovevents'), [evs.map(e => e.seq), peopleSig()], () => evs.length ? h('ul', { class: 'feed' }, evs.map(e => {
+    const w = who(e.participant_id);
+    return h('li', {}, avatar(w, true),
+      h('div', { class: 'fl' }, chip(e.event_type, 'ev-' + topicOf(e.event_type)), e.participant_id ? h('span', { class: 'muted', text: w.name, title: str(e.participant_id) }) : null),
+      timeEl(e.occurred_at),
+      h('div', { class: 'fx', text: evSummary(e) || '—' }));
+  })) : empty('No activity yet'));
+}
+function recipients(to, sm) {
+  to = arr(to);
+  if (to.includes('all')) return h('span', { class: 'chip st-mute', title: 'Broadcast to everyone' }, 'everyone');
+  if (!to.length) return h('span', { class: 'muted', text: 'nobody' });
+  return h('span', { class: 'row gap-s wrap', style: { display: 'inline-flex' } }, to.slice(0, 5).map(x => person(x, { sm: true })),
+    to.length > 5 ? h('span', { class: 'muted', text: '+' + (to.length - 5) }) : null);
+}
+function peopleList() {
+  const ps = S.ov.participants.slice().sort(byPerson);
+  if (!ps.length) return empty('Nobody has joined yet', 'Sessions join with palinor_join(project_id, join_key, name="", platform). Several sessions of one platform become Claude-1, Claude-2, ...');
+  return h('ul', { class: 'people' }, ps.map(p => {
+    const w = who(p.id);
+    return h('li', { class: 'pp' }, avatar(w),
+      h('div', {},
+        h('div', { class: 'pp-n' }, h('span', { class: 'pp-name', text: w.name, title: p.id }),
+          p.role === 'coordinator' ? chip('★ coordinator', 'st-warn') : chip(p.role, 'st-mute')),
+        h('div', { class: 'pp-m' }, h('span', { class: 'sdot ' + stCls(p.status), 'aria-hidden': 'true' }), h('span', { text: p.status }),
+          h('span', { text: '· ' + str(p.platform) }), h('span', { text: '· seen' }), timeEl(p.last_seen))),
+      arr(p.capabilities).length ? h('div', { class: 'pp-caps' }, arr(p.capabilities).slice(0, 5).map(c => h('span', { class: 'tag', text: clip(c, 24) }))) : null);
+  }));
+}
+function attention() {
+  const ov = S.ov, items = [];
+  for (const d of ov.debates) {
+    if (d.status === 'decided') continue;
+    const lp = (d.detail && d.detail.laya_preview) || {}, deb = (d.detail && d.detail.debate) || {};
+    const out = str(lp.outcome || d.laya);
+    if (out === 'ESCALATE') items.push(['hot', 'debates', 'Tie-break needed (you can decide)', d.question]);
+    else if (out === 'SYNTHESIZE') {
+      const sr = deb.synthesis_requested || {};
+      items.push(['warn', 'debates', 'Synthesis requested' + (sr.assigned_to ? ' from ' + who(sr.assigned_to).name : ''), d.question]);
+    } else if (out === 'NEED_VOTES') {
+      const owed = uniq(Object.values(lp.pending_votes || {}).flat().map(x => who(x).name));
+      items.push(['warn', 'debates', 'Waiting for votes' + (owed.length ? ' from ' + owed.join(', ') : ''), d.question]);
+    } else if (out && out !== 'DECIDED') items.push(['warn', 'debates', 'Laya: ' + out.replace(/_/g, ' ').toLowerCase(), d.question]);
+  }
+  for (const c of ov.conflicts) {
+    if (c.status === 'open') items.push(['hot', 'conflicts', 'Conflict awaiting ' + who(c.resolver).name, c.claim]);
+    else if (c.status === 'consulting') items.push(['hot', 'conflicts', 'Conflict: ' + who(c.resolver).name + ' is consulting ' + arr(c.consulted).map(x => who(x).name).join(', '), c.claim]);
+  }
+  for (const t of ov.tasks) if (t.status === 'FAILED') items.push(['bad', 'tasks', 'Task failed', t.title]);
+  for (const pl of (S.pl ? arr(S.pl.plans) : [])) if (pl.status === 'attention') items.push(['bad', 'pipeline', 'Plan needs attention', pl.goal]);
+  const badCmds = ov.commands.filter(c => c.status === 'EXPIRED' || c.status === 'REJECTED').length;
+  if (badCmds) items.push(['warn', 'tasks', badCmds + ' command(s) expired or rejected', 'see the command pipeline']);
+  for (const p of ov.participants) {
+    if (p.status !== 'offline' || p.role === 'human') continue;
+    const n = ov.tasks.filter(t => t.assignee === p.id && (t.status === 'ASSIGNED' || t.status === 'RUNNING')).length;
+    if (n) items.push(['warn', 'tasks', who(p.id).name + ' is offline with ' + n + ' task(s)', 'work will be re-dispatched']);
+  }
+  if (!items.length) return h('div', { class: 'empty sm' }, h('p', { class: 'empty-t', text: 'All clear' }), h('p', { class: 'empty-s', text: 'No tie-breaks, conflicts or failures waiting.' }));
+  const tone = { hot: 'st-hot', warn: 'st-warn', bad: 'st-bad' };
+  return h('ul', { class: 'attn' }, items.slice(0, 7).map(([t, tab, title, text], i) => h('li', {}, h('button', { class: tone[t], type: 'button', data: { fkey: 'attn-' + i },
+    on: { click: () => selectTab(tab, true) } }, h('span', { class: 'ai', 'aria-hidden': 'true' }), h('span', { class: 'at', text: title }),
+  h('span', { class: 'ag', 'aria-hidden': 'true', text: '›' }), h('span', { class: 'ax', text: clip(humanize(text), 160), title: str(text) })))));
+}
+
+// ------------------------------------------------------------------ communication network
+const NR = 23;
+function renderNet() {
+  const ov = S.ov, hid = humanId();
+  const parts = ov.participants.filter(p => p.role !== 'human').slice().sort(byPerson);
+  const ids = parts.map(p => p.id).concat(['laya', 'orchestrator']);
+  if (ov.participants.some(p => p.id === hid)) ids.push(hid);
+  const n = ids.length, idx = new Map(ids.map((id, i) => [id, i]));
+  const cx = 320, cy = 226, R = n <= 4 ? 140 : 160;
+  const pos = ids.map((id, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a }; });
+  const pairs = new Map(), sent = new Array(n).fill(0), recv = new Array(n).fill(0);
+  const now = Date.now();
+  for (const m of ov.messages) {
+    const a = idx.get(m.sender);
+    if (a === undefined) continue;
+    const to = arr(m.to), bc = to.includes('all');
+    const targets = bc ? ids.map((_, i) => i).filter(i => i !== a && !SYSTEM_IDS.has(ids[i]))
+      : uniq(to.map(t => idx.get(t)).filter(i => i !== undefined && i !== a));
+    sent[a]++;
+    for (const b of targets) {
+      const key = a + '>' + b;
+      let e = pairs.get(key);
+      if (!e) pairs.set(key, e = { a, b, direct: 0, bcast: 0, last: 0 });
+      if (bc) e.bcast++; else e.direct++;
+      e.last = Math.max(e.last, ts(m.created_at));
+      recv[b]++;
+    }
+  }
+  const geo = new Map();
+  for (const [key, e] of pairs) {
+    const p = pos[e.a], q = pos[e.b];
+    const dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1;
+    const nx = -dy / d, ny = dx / d, off = d * 0.14;
+    const c = { x: (p.x + q.x) / 2 + nx * off, y: (p.y + q.y) / 2 + ny * off };
+    const from = shift(p, c, NR + 3), to = shift(q, c, NR + 7);
+    geo.set(key, { p0: from, c, p1: to });
+  }
+  S.netGeo = { idx, geo, ids };
+  const edges = Array.from(pairs.entries()).sort((x, y) => (x[1].direct > 0) - (y[1].direct > 0) || (x[1].direct - y[1].direct));
+  const sig = [ids, ids.map(id => who(id).name), edges.map(([k, e]) => [k, e.direct, e.bcast, now - e.last < 120000])];
+  patch($('netEdges'), sig, () => edges.map(([key, e]) => {
+    const g = geo.get(key), w = who(ids[e.a]);
+    const width = e.direct ? 1.4 + 2.4 * Math.log2(1 + e.direct) : 1.1;
+    return sv('path', { class: 'ne pf-' + w.pf + (e.direct ? '' : ' bc') + (now - e.last < 120000 ? ' recent' : ''),
+      d: 'M' + r1(g.p0.x) + ' ' + r1(g.p0.y) + 'Q' + r1(g.c.x) + ' ' + r1(g.c.y) + ' ' + r1(g.p1.x) + ' ' + r1(g.p1.y),
+      'stroke-width': width, 'marker-end': e.direct ? 'url(#arr-' + w.pf + ')' : null, 'data-a': e.a, 'data-b': e.b },
+    sv('title', { text: w.name + ' → ' + who(ids[e.b]).name + ': ' + e.direct + ' direct' + (e.bcast ? ', ' + e.bcast + ' broadcast' : '') }));
+  }));
+  patch($('netNodes'), [ids, ids.map(id => { const w = who(id); return [w.name, w.pf, w.status, w.role]; }), sent, recv], () => ids.map((id, i) => {
+    const w = who(id), p = pos[i];
+    const ca = Math.cos(p.a), sa = Math.sin(p.a);
+    const lx = cx + (R + NR + 14) * ca, ly = cy + (R + NR + 14) * sa;
+    const anchor = ca > 0.35 ? 'start' : ca < -0.35 ? 'end' : 'middle';
+    const dy = sa > 0.5 ? 14 : sa < -0.5 ? -14 : 4;
+    const sub = SYSTEM_IDS.has(id) ? (id === 'laya' ? 'decides' : 'dispatches') : (w.role === 'coordinator' ? '★ coordinator' : w.role || '');
+    const g = sv('g', { class: 'nn pf-' + w.pf + (w.status === 'offline' ? ' off' : ''), tabindex: 0, role: 'button', 'data-i': i,
+      'aria-label': w.name + ', sent ' + sent[i] + ', received ' + recv[i] + '. Show their messages.' },
+    sv('circle', { class: 'halo', cx: p.x, cy: p.y, r: NR + 8, style: 'transform-origin:' + r1(p.x) + 'px ' + r1(p.y) + 'px' }),
+    sv('circle', { class: 'ring', cx: p.x, cy: p.y, r: NR }),
+    sv('text', { class: 'ini', x: p.x, y: p.y, 'text-anchor': 'middle', 'dominant-baseline': 'central', text: initials(w) }),
+    sv('text', { class: 'nl', x: lx, y: ly + dy, 'text-anchor': anchor, text: clip(w.name, 20) }),
+    sv('text', { class: 'ns', x: lx, y: ly + dy + 14, 'text-anchor': anchor, text: sub + (sub ? ' · ' : '') + sent[i] + ' sent' }),
+    sv('title', { text: w.name + (id !== w.name ? ' (' + id + ')' : '') + ' — sent ' + sent[i] + ', received ' + recv[i] }));
+    const go = () => { S.msgF.person = SYSTEM_IDS.has(id) || id === hid ? id : id; syncPersonFilter(true); selectTab('messages', true); };
+    g.addEventListener('click', go);
+    g.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
+    g.addEventListener('mouseenter', () => netFocus(i));
+    g.addEventListener('mouseleave', () => netFocus(-1));
+    g.addEventListener('focus', () => netFocus(i));
+    g.addEventListener('blur', () => netFocus(-1));
+    return g;
+  }));
+  const direct = edges.filter(([, e]) => e.direct).sort((x, y) => y[1].direct - x[1].direct).slice(0, 5);
+  const total = ov.messages.length;
+  $('netSub').textContent = total + ' messages · last ' + (ov.messages.length ? relMs(ts(ov.messages[ov.messages.length - 1].created_at)) : '—');
+  $('netDesc').textContent = direct.map(([, e]) => who(ids[e.a]).name + ' to ' + who(ids[e.b]).name + ': ' + e.direct).join('; ') || 'No direct messages yet.';
+  const shown = uniq(ids.map(id => who(id).pf));
+  const LBL = { claude: 'Claude', chatgpt: 'ChatGPT', opencode: 'OpenCode', human: 'You', laya: 'Laya', orch: 'Orchestrator', local: 'Local LLM', other: 'Other' };
+  patch($('r-netlegend'), [shown, direct.map(([k, e]) => [k, e.direct]), peopleSig()], () => [
+    h('div', { class: 'legend' }, shown.map(k => h('span', { class: 'li pf-' + k }, h('span', { class: 'sw', 'aria-hidden': 'true' }), LBL[k])),
+      h('span', { class: 'li' }, h('span', { class: 'sw', style: { background: 'transparent', border: '1px dashed #8b93a5' }, 'aria-hidden': 'true' }), 'broadcast')),
+    direct.length ? h('div', {}, h('div', { class: 'sub-h', text: 'Busiest direct channels' }), h('ul', { class: 'channels' }, direct.map(([, e]) => h('li', {},
+      person(ids[e.a], { sm: true }), h('span', { class: 'muted', text: '→' }), person(ids[e.b], { sm: true }), h('span', { class: 'cnt', text: String(e.direct) }))))) : null]);
+}
+const r1 = (x) => Math.round(x * 10) / 10;
+function shift(p, toward, dist) { const dx = toward.x - p.x, dy = toward.y - p.y, d = Math.hypot(dx, dy) || 1; return { x: p.x + dx / d * dist, y: p.y + dy / d * dist }; }
+function netFocus(i) {
+  const svg = $('net');
+  svg.classList.toggle('focus', i >= 0);
+  svg.querySelectorAll('.ne').forEach(e => e.classList.toggle('hl', i >= 0 && (e.getAttribute('data-a') === String(i) || e.getAttribute('data-b') === String(i))));
+  svg.querySelectorAll('.nn').forEach(nd => {
+    const j = nd.getAttribute('data-i');
+    let on = j === String(i);
+    if (!on && i >= 0) svg.querySelectorAll('.ne.hl').forEach(e => { if (e.getAttribute('data-a') === j || e.getAttribute('data-b') === j) on = true; });
+    nd.classList.toggle('hl', on);
+  });
+}
+const pulses = [];
+let pulseRaf = 0;
+function flushPulses() {
+  const list = S.pendingPulses;
+  S.pendingPulses = [];
+  if (S.tab !== 'overview' || RM || document.hidden || !S.netGeo || !list.length) return;
+  list.forEach((m, k) => {
+    const g = S.netGeo, a = g.idx.get(m.sender);
+    if (a === undefined) return;
+    const to = arr(m.to), bc = to.includes('all');
+    const targets = bc ? g.ids.map((_, i) => i).filter(i => i !== a && !SYSTEM_IDS.has(g.ids[i])) : to.map(t => g.idx.get(t)).filter(i => i !== undefined && i !== a);
+    const pf = who(m.sender, m.sender_name).pf;
+    targets.forEach(b => {
+      const geo = g.geo.get(a + '>' + b);
+      if (geo) pulses.push({ geo, t0: performance.now() + k * 380, dur: 1150, pf, a, el: null });
+    });
+  });
+  if (!pulseRaf) pulseRaf = requestAnimationFrame(animatePulses);
+}
+function animatePulses(now) {
+  pulseRaf = 0;
+  const layer = $('netPulses');
+  for (let i = pulses.length - 1; i >= 0; i--) {
+    const p = pulses[i];
+    const t = (now - p.t0) / p.dur;
+    if (t < 0) continue;
+    if (!p.el) {
+      p.el = sv('circle', { class: 'pulse pf-' + p.pf, r: 4.2 });
+      layer.appendChild(p.el);
+      const node = $('net').querySelector('.nn[data-i="' + p.a + '"]');
+      if (node) { node.classList.remove('ping'); void node.getBBox(); node.classList.add('ping'); setTimeout(() => node.classList.remove('ping'), 1150); }
+    }
+    if (t >= 1) { p.el.remove(); pulses.splice(i, 1); continue; }
+    const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const { p0, c, p1 } = p.geo, u = 1 - e;
+    p.el.setAttribute('cx', r1(u * u * p0.x + 2 * u * e * c.x + e * e * p1.x));
+    p.el.setAttribute('cy', r1(u * u * p0.y + 2 * u * e * c.y + e * e * p1.y));
+    p.el.setAttribute('opacity', String(t < 0.1 ? t * 10 : t > 0.85 ? (1 - t) / 0.15 : 1));
+  }
+  if (pulses.length) pulseRaf = requestAnimationFrame(animatePulses);
+}
+
+// ------------------------------------------------------------------ PIPELINE
+function renderPipeline() {
+  const plans = S.pl ? arr(S.pl.plans) : null;
+  patch($('r-pipeline'), [plans, peopleSig(), S.ov.tasks.map(t => [t.id, t.title]), Array.from(S.open).filter(k => k.startsWith('sum-'))], () => {
+    if (!plans) return empty('Loading the pipeline…');
+    if (!plans.length) return empty('No plan yet', 'A coordinator divides the work in one call: plan_submit(goal, tasks=[{key, title, capability, depends_on, assignee}]). PALINOR then dispatches every task as soon as its inputs are done.');
+    return plans.slice().reverse().map(planCard);
+  });
+}
+function planCard(p) {
+  const tasks = arr(p.tasks);
+  const titles = new Map(S.ov.tasks.map(t => [t.id, t.title]));
+  tasks.forEach(t => titles.set(t.task_id, t.title));
+  const nStages = Math.max(1, num(p.stages, 1), ...tasks.map(t => num(t.stage) + 1));
+  const stages = Array.from({ length: nStages }, () => []);
+  tasks.forEach(t => stages[Math.min(nStages - 1, Math.max(0, num(t.stage)))].push(t));
+  const workers = uniq(tasks.slice().sort((a, b) => num(a.stage) - num(b.stage)).map(t => t.assignee || t.completed_by).filter(Boolean));
+  const wl = p.workload && typeof p.workload === 'object' ? Object.entries(p.workload) : [];
+  const maxW = Math.max(1, ...wl.map(([, v]) => num(v && v.active) + num(v && v.done)));
+  return h('article', { class: 'card plan' },
+    h('div', { class: 'plan-h' },
+      h('div', { class: 'grow' },
+        h('h3', { text: p.goal }),
+        h('div', { class: 'row wrap gap-s' }, chip(p.status), idTag(p.plan_id), h('span', { class: 'muted sm', text: nStages + ' stage' + (nStages > 1 ? 's' : '') + ' · ' + tasks.length + ' tasks' })),
+        h('div', { class: 'cmdr' }, h('span', { text: 'Commanded by' }), person(p.owner, { sm: true }),
+          workers.length ? [h('span', { class: 'arrow', 'aria-hidden': 'true', text: '→' }), h('span', { text: 'hands off to' }),
+            workers.map((w, i) => [i ? h('span', { class: 'arrow', 'aria-hidden': 'true', text: '›' }) : null, person(w, { sm: true })])] : null)),
+      h('div', { class: 'prog' }, h('div', { class: 'prog-t' }, h('span', { text: 'Progress ' + str(p.progress) }), h('b', { text: num(p.percent) + '%' })),
+        h('div', { class: 'pbar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(num(p.percent)), 'aria-label': 'Plan progress' },
+          h('span', { style: { width: pct(num(p.percent) / 100) } })))),
+    h('div', { class: 'stages' }, stages.map((list, i) => h('section', { class: 'stage', 'aria-label': 'Stage ' + (i + 1) },
+      h('div', { class: 'stage-h' }, h('span', { class: 'n', text: String(i + 1) }), h('span', { text: 'Stage ' + (i + 1) }), h('span', { class: 'muted', text: '· ' + list.length })),
+      h('div', { class: 'tasks' }, list.map(t => taskCard(t, titles)))))),
+    wl.length ? [h('div', { class: 'sub-h', text: 'Workload' }), h('div', { class: 'wl' }, wl.map(([pid, v]) => {
+      const a = num(v && v.active), d = num(v && v.done);
+      return h('div', { class: 'wl-r' }, person(pid, { sm: true }),
+        h('div', { class: 'wl-b', role: 'img', 'aria-label': who(pid).name + ': ' + d + ' done, ' + a + ' active' },
+          h('span', { class: 'd', style: { width: pct(d / maxW) } }), h('span', { class: 'a', style: { width: pct(a / maxW) } })),
+        h('span', { class: 'wl-n', text: d + ' done · ' + a + ' active' }));
+    }))] : null);
+}
+function taskCard(t, titles) {
+  const waits = arr(t.waiting_on);
+  return h('div', { class: 'task ' + stCls(t.status) },
+    h('div', { class: 'task-top' }, h('span', { class: 'row gap-s' }, t.key ? h('span', { class: 'mono idt', text: clip(t.key, 20) }) : null, idTag(t.task_id)), chip(t.status)),
+    h('div', { class: 'task-title', text: t.title }),
+    h('div', { class: 'task-meta' }, t.assignee ? person(t.assignee, { sm: true }) : h('span', { class: 'muted', text: 'not dispatched yet' }),
+      t.capability ? h('span', { class: 'tag', text: t.capability }) : null),
+    t.command ? h('div', { class: 'task-meta' }, h('span', { text: 'Command' }), chip(t.command), num(t.attempt) > 1 ? chip('attempt ' + t.attempt, 'st-warn') : null) : null,
+    waits.length ? h('div', { class: 'waits' }, h('span', { text: 'Waiting on' }), waits.map(w => h('span', { class: 'chip st-warn', title: str(titles.get(w) || w) }, clip(titles.get(w) || w, 34)))) : null,
+    t.result_summary ? longText('sum-' + t.task_id, t.result_summary, 160, 'task-sum') : null,
+    t.completed_by ? h('div', { class: 'task-meta' }, h('span', { text: 'Completed by' }), person(t.completed_by, { sm: true })) : null);
+}
+
+// ------------------------------------------------------------------ CONFLICTS
+function renderConflicts() {
+  const list = S.cf ? arr(S.cf.conflicts) : S.ov.conflicts;
+  patch($('r-conflicts'), [list, S.ov.decisions.filter(d => d.mode === 'conflict'), peopleSig()], () => {
+    if (!list.length) return empty('No conflicts', 'When a participant finds the knowledge graph contradicts its own results it calls conflict_raise. Only its coordinator hears about it; the coordinator may consult up to three named participants and resolves it, and Laya audits whether the chosen side has the stronger evidence.');
+    return list.slice().reverse().map(conflictCard);
+  });
+}
+function step(n, title, state, ...body) {
+  return h('li', { class: 'step ' + state }, h('div', { class: 'step-h' }, h('span', { class: 'n', text: state === 'done' ? '✓' : String(n) }), h('span', { text: title })), body);
+}
+function evList(list) {
+  list = arr(list);
+  if (!list.length) return h('p', { class: 'muted', text: 'no evidence attached' });
+  return h('div', { style: { display: 'grid', gap: '5px', 'margin-top': '6px' } }, list.map(e => h('div', { class: 'ev', title: str(e.uri) },
+    h('span', { text: clip(e.source || e.uri || 'evidence', 40) }), h('span', { class: 'rb' }, h('span', { style: { width: pct(num(e.reliability)) } })),
+    h('span', { class: 'mono', text: fmt(e.reliability) }))));
+}
+function conflictCard(c) {
+  const pkg = c.package || {};
+  const id = str(c.id || c.conflict_id);
+  const dec = c.decision_id ? S.ov.decisions.find(d => d.id === c.decision_id) : null;
+  const da = (dec && dec.evidence_audit) || {};
+  const audit = c.evidence_audit || da;
+  const ops = arr(c.opinions).length ? arr(c.opinions) : arr(dec && dec.opinions);
+  const status = str(c.status);
+  const consulted = arr(c.consulted), pending = arr(c.pending);
+  const resolved = status === 'resolved', closed = resolved || status === 'withdrawn';
+  const challenged = arr(pkg.challenged).length ? arr(pkg.challenged) : arr(c.about).map(x => ({ id: x }));
+  return h('article', { class: 'card conflict' },
+    h('header', { class: 'cf-h' }, h('h3', { text: c.claim }),
+      h('div', { class: 'row wrap gap-s' }, chip(status), chip((c.severity || 'normal') + ' severity', c.severity === 'high' ? 'st-bad' : c.severity === 'low' ? 'st-mute' : 'st-warn'),
+        idTag(id), c.task_id ? h('span', { class: 'muted sm' }, 'during ', idTag(c.task_id)) : null, timeEl(c.created_at))),
+    h('ol', { class: 'flow' },
+      step(1, 'Raised by', 'done', person(c.raised_by),
+        h('div', { class: 'quote', text: c.claim }),
+        h('p', { text: 'Challenges ' + challenged.length + ' node' + (challenged.length === 1 ? '' : 's') + ':' }),
+        challenged.map(n => h('div', { class: 'node-ref' }, h('div', { class: 'row wrap gap-s' }, idTag(n.id), n.label ? chip(n.label, 'st-mute') : null, n.status ? chip(n.status) : null),
+          n.text ? h('div', { text: clip(n.text, 220), title: str(n.text) }) : null, n.by ? h('div', { class: 'row gap-s muted sm' }, 'by ', person(n.by, { sm: true })) : null,
+          n.evidence ? evList(n.evidence) : null)),
+        h('p', { text: 'Challenge evidence:' }), evList(pkg.challenge_evidence)),
+      step(2, 'Resolver', closed || consulted.length ? 'done' : 'cur', person(c.resolver),
+        h('p', { text: 'The coordinator responsible for this work. Only the resolver was notified — no broadcast.' })),
+      step(3, 'Consulted', consulted.length ? (pending.length && !closed ? 'cur' : 'done') : (closed ? 'done' : 'todo'),
+        consulted.length ? h('div', { class: 'row wrap gap-s' }, consulted.map(x => person(x, { sm: true }))) : h('p', { text: closed ? 'Nobody was consulted.' : 'Nobody consulted yet (up to three named participants).' }),
+        c.consult_question ? h('div', { class: 'quote', text: c.consult_question }) : null,
+        pending.length ? h('div', { class: 'pending', style: { 'margin-top': '8px' } }, h('span', { text: 'Waiting for' }), pending.map(x => person(x, { sm: true }))) : (consulted.length ? h('p', { text: 'Everyone consulted has answered.' }) : null)),
+      step(4, 'Opinions', ops.length ? 'done' : (consulted.length && !closed ? 'cur' : (closed ? 'done' : 'todo')),
+        ops.length ? ops.map(o => h('div', { class: 'opn' },
+          h('div', { class: 'row wrap gap-s' }, person(o.by, { sm: true }), h('span', { class: 'chip ' + posCls(o.position), text: str(o.position).replace('_', ' ') }),
+            typeof o.confidence === 'number' ? h('span', { class: 'muted sm', text: Math.round(o.confidence * 100) + '% confident' }) : null),
+          h('div', { class: 'sm', style: { color: 'var(--text-2)' }, text: o.rationale }),
+          arr(o.refs).length ? h('div', { class: 'refs' }, h('span', { class: 'muted sm', text: 'cites' }), arr(o.refs).map(idTag)) : null))
+          : h('p', { text: 'No opinions yet. Opinions must cite real node ids or evidence — invented ids are rejected.' })),
+      step(5, 'Resolution', resolved ? 'done' : (closed ? 'done' : 'cur'),
+        resolved ? h('div', { class: 'row wrap gap-s' }, h('span', { class: 'chip ' + (c.resolution === 'keep' ? 'pos-keep' : c.resolution === 'merge' ? 'pos-merge' : 'pos-accept'), text: str(c.resolution).replace('_', ' ') }), idTag(c.decision_id))
+          : status === 'withdrawn' ? h('p', { text: 'Withdrawn by the participant who raised it.' }) : h('p', {}, 'Awaiting a decision by ', person(c.resolver, { sm: true })),
+        dec && arr(dec.rationale).length ? h('div', { class: 'quote', text: arr(dec.rationale).join(' ') }) : null,
+        dec && arr(dec.effects).length ? h('ul', { class: 'effects' }, arr(dec.effects).map(x => h('li', { text: x }))) : null,
+        audit && (typeof audit.existing === 'number' || typeof audit.challenge === 'number') ? auditBar(audit, resolved ? str(da.chosen) : '', resolved && !!da.against_evidence) : null)));
+}
+function auditBar(a, chosen, against) {
+  const e = num(a.existing), c = num(a.challenge), tot = e + c;
+  return h('div', { class: 'audit' },
+    h('div', { class: 'audit-l' }, h('span', { text: 'Laya evidence audit' }),
+      against ? chip('against evidence', 'st-bad') : chosen === 'merge' ? chip('merged', 'pos-merge') : chosen ? chip('chose ' + chosen, 'st-ok') : null),
+    tot > 0 ? h('div', { class: 'audit-bar', role: 'img', 'aria-label': 'Existing knowledge ' + fmt(e) + ' versus challenge ' + fmt(c) },
+      h('span', { class: 'ex' + (chosen === 'existing' ? ' chosen' : ''), style: { width: pct(e / tot) } }),
+      h('span', { class: 'ch' + (chosen === 'challenge' ? ' chosen' : ''), style: { width: pct(c / tot) } })) : h('p', { text: 'No evidence on either side.' }),
+    h('div', { class: 'audit-k' }, h('span', {}, h('i', { class: 'ex' }), 'existing ' + fmt(e)), h('span', {}, h('i', { class: 'ch' }), 'challenge ' + fmt(c))),
+    against ? h('div', { class: 'dangerbox', role: 'note', text: '⚠ Resolved against the evidence: the chosen side is weaker by ' + fmt(Math.abs(e - c)) + '. The resolver’s rationale is recorded for review.' }) : null);
+}
+
+// ------------------------------------------------------------------ DEBATES
+function renderDebates() {
+  const ov = S.ov;
+  patch($('r-debates'), [ov.debates, ov.decisions.map(d => d.id), peopleSig(), S.pid], () => {
+    if (!ov.debates.length) return empty('No debates yet', 'Open one above or let a participant call debate_open. Everyone submits a perspective, votes on the others, and Laya decides — asking for a synthesis when two are too close.');
+    const order = { escalated: 0, open: 1, decided: 2 };
+    return ov.debates.slice().sort((a, b) => (num(order[a.status], 1) - num(order[b.status], 1)) || ts((b.detail && b.detail.debate || {}).created_at) - ts((a.detail && a.detail.debate || {}).created_at))
+      .map((d, i) => debateCard(d, i));
+  });
+}
+function debateCard(d, di) {
+  const det = d.detail || {}, lp = det.laya_preview || {}, deb = det.debate || {};
+  const outcome = str(lp.outcome || d.laya);
+  const ranking = arr(lp.ranking), rk = new Map(ranking.map(r => [r.proposal_id, r]));
+  const pending = (lp.pending_votes && typeof lp.pending_votes === 'object') ? lp.pending_votes : {};
+  const persps = arr(det.perspectives);
+  const byId = new Map(persps.map(p => [p.proposal_id, p]));
+  const open = d.status === 'open' || d.status === 'escalated';
+  const dec = d.decision_id ? S.ov.decisions.find(x => x.id === d.decision_id) : null;
+  const sr = deb.synthesis_requested || {};
+  const votes = persps.reduce((a, p) => a + arr(p.votes).length, 0);
+  return h('article', { class: 'card deb' },
+    h('div', { class: 'deb-h' },
+      h('div', {},
+        h('h3', { text: d.question }),
+        h('div', { class: 'row wrap gap-s' }, chip(d.mode, 'st-info'), chip(d.status), h('span', { class: 'muted sm', text: persps.length + ' perspectives · ' + votes + ' votes' }),
+          deb.opened_by ? h('span', { class: 'row gap-s muted sm' }, 'opened by', person(deb.opened_by, { sm: true })) : null, timeEl(deb.created_at)),
+        deb.context ? longText('ctx-' + d.debate_id, deb.context, 280, 'deb-ctx') : null),
+      verdictBox(outcome, lp, sr, dec, byId)),
+    persps.length ? h('div', { class: 'persp-grid' }, persps.map(p => perspCard(p, rk.get(p.proposal_id), arr(pending[p.proposal_id]), open, byId)))
+      : h('p', { class: 'muted', text: 'No perspectives yet.' }),
+    outcome === 'ESCALATE' && open ? tiebreakBox(d, di, ranking) : null);
+}
+function verdictBox(outcome, lp, sr, dec, byId) {
+  let line = null;
+  if (dec) line = h('p', {}, h('strong', { text: dec.outcome === 'TIEBREAK' ? 'Tie-break: ' : 'Decided: ' }), str(dec.selected_approach || dec.selected_option));
+  else if (outcome === 'SYNTHESIZE' && arr(lp.synthesize).length) {
+    line = h('p', {}, 'Too close to call: combine ', arr(lp.synthesize).map((x, i) => [i ? ' + ' : '', idTag(x)]),
+      sr.assigned_to ? [' — asked ', person(sr.assigned_to, { sm: true })] : null);
+  } else if (outcome === 'ESCALATE') line = h('p', { text: 'Still tied after a synthesis. A coordinator or you (below) must break the tie.' });
+  else if (outcome === 'NEED_VOTES') line = h('p', { text: 'Collecting votes: every participant votes on every other perspective before Laya decides.' });
+  const missing = arr(lp.missing).filter(x => !dec);
+  return h('div', { class: 'verdict', role: 'note', 'aria-label': 'Laya verdict' },
+    h('div', { class: 'verdict-h' }, h('span', { class: 'laya-mark', 'aria-hidden': 'true' }), h('span', { text: 'Laya' }), chip(dec ? (dec.outcome || 'DECIDED') : outcome || 'pending')),
+    line, missing.length ? h('ul', {}, missing.slice(0, 4).map(m => h('li', { text: clip(humanize(m), 220) }))) : null,
+    dec ? h('div', { class: 'row gap-s', style: { 'margin-top': '8px' } }, idTag(dec.id), timeEl(dec.created_at)) : null);
+}
+function perspCard(p, r, pend, open, byId) {
+  const status = str(p.status), sup = r && r.superseded_by;
+  const votes = arr(p.votes), ap = num(p.approve), rj = num(p.reject), tot = ap + rj;
+  const hid = humanId(), mine = votes.find(v => v.voter === hid);
+  const canVote = open && status === 'open' && p.author !== hid;
+  const syn = p.kind === 'synthesis';
+  return h('div', { class: 'persp' + (status === 'selected' ? ' is-sel' : '') + (sup ? ' is-sup' : '') + (syn ? ' is-syn' : '') },
+    h('div', { class: 'persp-h' }, person(p.author, { sm: true }), syn ? chip('synthesis', 'st-syn') : chip('perspective', 'st-mute'),
+      chip(status === 'selected' ? '✓ selected' : status, stCls(status)), sup ? chip('superseded', 'st-mute', 'Superseded by ' + sup) : null),
+    h('h4', { class: 'persp-a', text: p.approach }),
+    p.rationale ? h('p', { class: 'persp-r', text: clip(p.rationale, 400), title: str(p.rationale) }) : null,
+    arr(p.derived_from).length ? h('div', { class: 'lineage' }, h('div', { class: 'muted', text: 'Synthesis of' }), arr(p.derived_from).map(x => h('div', { class: 'lr' },
+      idTag(x), h('span', { text: clip((byId.get(x) || {}).approach || '', 70), title: str((byId.get(x) || {}).approach) })))) : null,
+    sup ? h('div', { class: 'row gap-s muted sm' }, 'Superseded by', idTag(sup), h('span', { text: '(the group did not clearly prefer the original)' })) : null,
+    h('div', { class: 'vb' },
+      h('div', { class: 'vb-t' }, h('span', { text: ap + ' approve · ' + rj + ' reject' }), r ? h('span', { text: 'Laya score ' + fmt(r.score) }) : null),
+      h('div', { class: 'vbar', role: 'img', 'aria-label': ap + ' approve, ' + rj + ' reject' },
+        tot ? [h('span', { class: 'a', style: { width: pct(ap / tot) } }), h('span', { class: 'r', style: { width: pct(rj / tot) } })] : null),
+      r ? h('div', { class: 'sbar', title: 'evidence ' + fmt(r.evidence_score) + ' · votes ' + fmt(r.vote_score) + ' · results ' + fmt(r.result_score) },
+        h('span', { style: { width: pct(Math.min(1, num(r.score))) } })) : null),
+    votes.length ? h('ul', { class: 'votes' }, votes.map(v => h('li', {}, person(v.voter, { sm: true }),
+      h('span', { class: 'vv ' + (v.value === 'approve' ? 'ap' : 'rj'), text: (v.value === 'approve' ? '✓ ' : '✗ ') + Math.round(num(v.confidence, 1) * 100) + '%' }),
+      h('span', { class: 'vr', text: str(v.rationale) || '—', title: str(v.rationale) })))) : null,
+    pend.length ? h('div', { class: 'pending' }, h('span', { text: 'Waiting for' }), pend.map(x => person(x, { sm: true }))) : null,
+    arr(p.arguments).length ? h('div', { class: 'sm muted', text: arr(p.arguments).length + ' argument(s): ' + arr(p.arguments).map(a => (a.position === 'oppose' ? '− ' : '+ ') + clip(a.rationale, 60)).join(' · ') }) : null,
+    canVote ? voteForm(p, mine) : (mine ? h('div', { class: 'sm muted', text: 'You voted ' + mine.value + '.' }) : null),
+    h('div', { class: 'persp-f' }, idTag(p.proposal_id), h('span', { class: 'muted sm', text: num(p.evidence) + ' evidence' })));
+}
+function voteForm(p, mine) {
+  const k = 'v-' + p.proposal_id;
+  const form = h('div', { class: 'vote-form' },
+    h('div', { class: 'vt', text: mine ? 'Your vote: ' + mine.value + ' (vote again to change)' : 'Your vote' }),
+    h('input', { class: 'input sm', type: 'text', placeholder: 'Rationale (optional)', maxlength: 500, data: { keep: k + '-why' }, 'aria-label': 'Rationale for your vote' }),
+    h('div', { class: 'row gap-s' },
+      h('select', { class: 'input sm', data: { keep: k + '-conf' }, 'aria-label': 'Confidence', style: { width: '92px' } },
+        [['1', '100%'], ['0.8', '80%'], ['0.6', '60%'], ['0.4', '40%']].map(([v, t]) => h('option', { value: v, text: t }))),
+      h('button', { class: 'btn sm ok', type: 'button', data: { fkey: k + '-ap' }, on: { click: (e) => castVote(p, 'approve', form, e.currentTarget) } }, '✓ Approve'),
+      h('button', { class: 'btn sm bad', type: 'button', data: { fkey: k + '-rj' }, on: { click: (e) => castVote(p, 'reject', form, e.currentTarget) } }, '✗ Reject')));
+  return form;
+}
+async function castVote(p, value, form, btn) {
+  const why = form.querySelector('input'), conf = form.querySelector('select');
+  try {
+    const out = await post('/votes', { proposal_id: p.proposal_id, value, confidence: Number(conf.value) || 1, rationale: why.value.trim() }, btn);
+    why.value = '';
+    const laya = out && out.laya && out.laya.outcome;
+    toast('Vote recorded: ' + value + (laya ? ' — Laya: ' + laya : ''), 'ok');
+    refreshSoon();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+function tiebreakBox(d, di, ranking) {
+  const tied = ranking.filter(r => !r.superseded_by).slice(0, 2);
+  const k = 'tb-' + d.debate_id;
+  const box = h('div', { class: 'tiebreak' },
+    h('div', { class: 'tb-h' }, h('strong', { text: 'Break the tie' }),
+      h('span', { class: 'muted', text: 'Laya cannot separate the two leading options even after a synthesis. Your choice is recorded as a tie-break with your rationale, next to the full ranking.' })),
+    h('div', { class: 'tb-opts', role: 'radiogroup', 'aria-label': 'Tied options' }, tied.map((r, i) => h('label', { class: 'tb-opt' },
+      h('input', { type: 'radio', name: 'tb' + di, data: { keep: k + '-' + i }, 'aria-label': 'Choose option ' + (i + 1) }),
+      h('span', { class: 'tb-o' }, h('strong', { text: r.approach || r.proposal_id }),
+        h('span', { class: 'row gap-s muted sm' }, person(r.author, { sm: true }), h('span', { text: '· score ' + fmt(r.score) })), idTag(r.proposal_id))))),
+    h('textarea', { class: 'input', rows: 2, maxlength: 2000, placeholder: 'Rationale (required)', data: { keep: k + '-why' }, 'aria-label': 'Tie-break rationale' }),
+    h('div', { class: 'row end', style: { 'margin-top': '10px' } },
+      h('button', { class: 'btn primary', type: 'button', data: { fkey: k + '-go' }, on: { click: (e) => doTiebreak(d, tied, box, e.currentTarget) } }, 'Record tie-break')));
+  return box;
+}
+async function doTiebreak(d, tied, box, btn) {
+  const radios = Array.from(box.querySelectorAll('input[type=radio]'));
+  const i = radios.findIndex(x => x.checked);
+  const why = box.querySelector('textarea').value.trim();
+  if (i < 0 || !tied[i]) { toast('Choose one of the tied options first.', 'warn'); return; }
+  if (!why) { toast('A tie-break needs a rationale.', 'warn'); box.querySelector('textarea').focus(); return; }
+  try {
+    const out = await post('/tiebreak', { question: d.question, proposal_id: tied[i].proposal_id, rationale: why }, btn);
+    toast('Tie-break recorded' + (out && out.decision_id ? ' as ' + out.decision_id : ''), 'ok');
+    refreshSoon();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+// ------------------------------------------------------------------ MESSAGES
+function canReply(m) { const to = arr(m.to), hid = humanId(); return to.includes('all') || to.includes(hid) || m.sender === hid; }
+function syncRecipients() {
+  const sel = $('cTo');
+  const ps = S.ov.participants.filter(p => p.role !== 'human').slice().sort(byPerson);
+  const sig = JSON.stringify(ps.map(p => [p.id, p.name, p.role, p.status]));
+  if (sel.dataset.sig === sig) return;
+  sel.dataset.sig = sig;
+  const cur = sel.value;
+  sel.replaceChildren(h('option', { value: 'all', text: 'Everyone (broadcast)' }),
+    ps.map(p => h('option', { value: p.id, text: who(p.id).name + ' · ' + p.role + (p.status === 'offline' ? ' (offline)' : '') })));
+  sel.value = Array.from(sel.options).some(o => o.value === cur) ? cur : 'all';
+}
+function syncPersonFilter(force) {
+  const sel = $('mPerson');
+  const ids = S.ov.participants.slice().sort(byPerson).map(p => p.id).concat(['laya', 'orchestrator']);
+  const sig = JSON.stringify(ids.map(id => [id, who(id).name]));
+  if (force || sel.dataset.sig !== sig) {
+    sel.dataset.sig = sig;
+    sel.replaceChildren(h('option', { value: '', text: 'Everyone' }), ids.map(id => h('option', { value: id, text: who(id).name })));
+  }
+  sel.value = Array.from(sel.options).some(o => o.value === S.msgF.person) ? S.msgF.person : '';
+}
+function renderKindChips() {
+  const box = $('mKinds');
+  if (box.childElementCount) return;
+  KINDS.forEach(k => box.appendChild(h('button', { class: 'chip kchip ' + kCls(k), type: 'button', 'aria-pressed': 'false', data: { kind: k },
+    on: { click: (e) => { const b = e.currentTarget; if (S.msgF.kinds.has(k)) S.msgF.kinds.delete(k); else S.msgF.kinds.add(k); b.setAttribute('aria-pressed', String(S.msgF.kinds.has(k))); renderMessages(); } } }, k)));
+}
+function renderMessages() {
+  renderKindChips();
+  syncRecipients();
+  syncPersonFilter();
+  const ov = S.ov, F = S.msgF;
+  patch($('r-msgs'), [ov.messages, peopleSig(), F.person, Array.from(F.kinds).sort(), F.q, Array.from(S.open).filter(k => k.startsWith('m')), S.pid], () => {
+    const q = F.q.toLowerCase();
+    let list = ov.messages.slice();
+    if (F.person) list = list.filter(m => m.sender === F.person || arr(m.to).includes(F.person));
+    if (F.kinds.size) list = list.filter(m => F.kinds.has(m.kind));
+    if (q) list = list.filter(m => (str(m.subject) + '\n' + str(m.body) + '\n' + who(m.sender, m.sender_name).name).toLowerCase().includes(q));
+    if (!ov.messages.length) return empty('No messages yet', 'Participants talk with message_send(to=…); you can write to anyone from the compose panel.');
+    if (!list.length) return empty('No messages match the filters');
+    const threads = new Map();
+    for (const m of list) { const k = str(m.thread_id) || str(m.message_id); if (!threads.has(k)) threads.set(k, []); threads.get(k).push(m); }
+    const ordered = Array.from(threads.entries()).map(([id, msgs]) => ({ id, msgs: msgs.sort((a, b) => ts(a.created_at) - ts(b.created_at)) }))
+      .sort((a, b) => ts(b.msgs[b.msgs.length - 1].created_at) - ts(a.msgs[a.msgs.length - 1].created_at));
+    return [h('p', { class: 'muted sm', style: { margin: '0 0 10px' }, text: list.length + ' of ' + ov.messages.length + ' recent messages in ' + ordered.length + ' threads' }),
+      ordered.map(th => h('article', { class: 'thread' },
+        th.msgs.length > 1 ? h('div', { class: 'thread-h' }, h('span', { text: 'Thread · ' + th.msgs.length + ' messages' }), idTag(th.id)) : null,
+        th.msgs.map((m, i) => msgRow(m, i > 0 || (m.reply_to && th.msgs.length > 1)))))];
+  });
+}
+function msgRow(m, isReply) {
+  const w = who(m.sender, m.sender_name);
+  const subj = str(m.subject), body = str(m.body);
+  const showSubj = subj && !body.startsWith(subj.replace(/…$/, ''));
+  return h('div', { class: 'msg' + (isReply ? ' reply' : '') },
+    avatar(w),
+    h('div', { style: { 'min-width': '0' } },
+      h('div', { class: 'msg-h pf-' + w.pf }, h('span', { class: 'from', text: w.name, title: w.name + ' · ' + w.id }),
+        h('span', { class: 'arrow', 'aria-hidden': 'true', text: '→' }), recipients(m.to), chip(m.kind, kCls(m.kind)),
+        m.reply_to ? h('span', { class: 'muted sm', text: '↳ reply' }) : null, timeEl(m.created_at)),
+      showSubj ? h('div', { class: 'msg-s', text: subj }) : null,
+      longText('m' + m.message_id, body, 520, 'msg-body'),
+      arr(m.refs).length ? h('div', { class: 'refs' }, h('span', { class: 'muted sm', text: 'refs' }), arr(m.refs).slice(0, 12).map(idTag)) : null,
+      m.context && typeof m.context === 'object' ? ctxBox(m.context) : null,
+      h('div', { class: 'msg-f' }, receipts(m),
+        canReply(m) ? h('button', { class: 'linkbtn', type: 'button', data: { fkey: 'reply-' + m.message_id }, on: { click: () => startReply(m) } }, 'Reply') : null,
+        h('span', { class: 'grow' }), idTag(m.message_id))));
+}
+function ctxBox(c) {
+  const nodes = arr(c.nodes);
+  const parts = [h('span', { class: 'chip k-context', text: c.conflict_id ? 'conflict package' : 'context package' })];
+  if (c.conflict_id) parts.push(idTag(c.conflict_id), h('span', { text: 'challenges' }), arr(c.challenged).map(x => idTag(x && x.id)));
+  if (c.task_context && c.task_context.task) parts.push(h('span', { text: 'task' }), idTag(c.task_context.task.task_id), h('span', { class: 'muted', text: clip(c.task_context.task.title, 60) }));
+  if (nodes.length) parts.push(h('span', { text: nodes.length + ' node' + (nodes.length > 1 ? 's' : '') + ':' }), nodes.slice(0, 8).map(n => {
+    const nd = (n && n.node) || {};
+    return h('span', { class: 'row gap-s', title: clip(nd.claim || nd.title || nd.approach || nd.question || nd.text || '', 400) }, idTag(nd.id), nd._label ? h('span', { class: 'muted', text: str(nd._label) }) : null);
+  }));
+  if (c.project_context) parts.push(h('span', { text: 'project overview' }));
+  return h('div', { class: 'ctx' }, parts);
+}
+function receipts(m) {
+  const read = arr(m.read_by), to = arr(m.to);
+  if (to.includes('all')) {
+    return h('span', { class: 'rcpt', title: read.length ? 'Read by ' + read.map(x => who(x).name).join(', ') : 'Not read yet' },
+      h('span', { text: read.length ? '✓✓ read by ' + read.length : '✓ delivered to everyone' }), read.slice(0, 6).map(x => avatar(who(x), true)));
+  }
+  const all = to.length > 0 && to.every(x => read.includes(x));
+  return h('span', { class: 'rcpt' + (all ? ' done' : ''), title: to.map(x => who(x).name + (read.includes(x) ? ': read' : ': unread')).join(', ') },
+    h('span', { text: all ? '✓✓ read' : read.length ? '✓✓ read by ' + read.length + '/' + to.length : '✓ delivered' }), read.slice(0, 6).map(x => avatar(who(x), true)));
+}
+function startReply(m) {
+  S.reply = { id: m.message_id, sender: m.sender };
+  const w = who(m.sender, m.sender_name);
+  $('replyBar').hidden = false;
+  $('replyText').textContent = 'Replying to ' + w.name + ': ' + clip(m.subject || m.body, 80);
+  const sel = $('cTo');
+  if (S.people.has(m.sender) && m.sender !== humanId() && Array.from(sel.options).some(o => o.value === m.sender)) sel.value = m.sender;
+  if (m.kind === 'question') $('cKind').value = 'answer';
+  $('cBody').focus();
+}
+function cancelReply() { S.reply = null; $('replyBar').hidden = true; $('replyText').textContent = ''; }
+async function sendMessage(e) {
+  if (e) e.preventDefault();
+  const body = $('cBody').value;
+  if (!body.trim()) { toast('Write a message first.', 'warn'); $('cBody').focus(); return; }
+  const payload = { to: $('cTo').value || 'all', body, kind: $('cKind').value, subject: $('cSubject').value.trim(), reply_to: S.reply ? S.reply.id : '' };
+  try {
+    const out = await post('/messages', payload, $('cSend'));
+    if (out && out.duplicate) toast('Identical message was sent recently — not delivered again.', 'warn');
+    else toast('Sent to ' + (payload.to === 'all' ? 'everyone' : who(payload.to).name), 'ok');
+    $('cBody').value = ''; $('cSubject').value = '';
+    cancelReply();
+    refreshSoon();
+  } catch (err) { toast(err.message, 'bad'); }
+}
+
+// ------------------------------------------------------------------ KNOWLEDGE GRAPH
+const G = { nodes: [], links: [], byId: new Map(), vis: [], vlinks: [], alpha: 0, raf: 0, k: 1, tx: 0, ty: 0, w: 0, h: 0,
+  sel: '', hidden: new Set(['Message', 'Vote']), dataSig: '', fitted: false, drag: null, dom: null, elMap: new WeakMap(), q: '', hov: null };
+const IMPORTANT = new Set(['Project', 'Participant', 'Plan', 'Decision', 'Debate', 'Conflict', 'Laya']);
+function graphInitDom() {
+  if (G.dom) return;
+  const svg = $('gsvg');
+  G.dom = { svg, view: $('gview'), edges: $('gedges'), nodes: $('gnodes') };
+  const measure = () => { const r = svg.getBoundingClientRect(); if (r.width && r.height) { if (!G.w) { G.tx = r.width / 2; G.ty = r.height / 2; } G.w = r.width; G.h = r.height; applyView(); } };
+  try { new ResizeObserver(measure).observe(svg); } catch (e) { window.addEventListener('resize', measure); }
+  measure();
+  svg.addEventListener('wheel', (e) => { e.preventDefault(); const p = svgPt(e); zoomAt(p.x, p.y, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
+  svg.addEventListener('pointerdown', gDown);
+  svg.addEventListener('pointermove', gMove);
+  svg.addEventListener('pointerup', gUp);
+  svg.addEventListener('pointercancel', gUp);
+  svg.addEventListener('keydown', gKey);
+  svg.addEventListener('pointerover', (e) => { const g = e.target.closest ? e.target.closest('.gn') : null; if (G.hov) G.hov.classList.remove('hov'); G.hov = g; if (g) g.classList.add('hov'); });
+  $('gZoomIn').addEventListener('click', () => zoomAt(G.w / 2, G.h / 2, 1.3));
+  $('gZoomOut').addEventListener('click', () => zoomAt(G.w / 2, G.h / 2, 1 / 1.3));
+  $('gFit').addEventListener('click', graphFit);
+  $('gRelayout').addEventListener('click', () => { G.nodes.forEach((n, i) => { const a = i * 2.39996, r = 12 * Math.sqrt(i + 1); n.x = r * Math.cos(a); n.y = r * Math.sin(a); n.vx = n.vy = 0; }); prewarm(200); graphFit(); graphKick(0.3); });
+  $('gSearch').addEventListener('input', (e) => { G.q = e.target.value.trim(); graphMatches(); renderGraphSide(true); });
+  $('gSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { const first = $('r-gresults').querySelector('button'); if (first) first.click(); } });
+}
+function svgPt(e) { const r = G.dom.svg.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function applyView() { if (!G.dom) return; G.dom.view.setAttribute('transform', 'translate(' + r1(G.tx) + ',' + r1(G.ty) + ') scale(' + (Math.round(G.k * 1000) / 1000) + ')'); G.dom.svg.classList.toggle('zoomed', G.k > 1.6); }
+function zoomAt(x, y, f) { const k2 = Math.min(5, Math.max(0.12, G.k * f)); G.tx = x - (x - G.tx) * (k2 / G.k); G.ty = y - (y - G.ty) * (k2 / G.k); G.k = k2; applyView(); }
+function gDown(e) {
+  if (e.button !== 0) return;
+  G.dom.svg.focus({ preventScroll: true });
+  const g = e.target.closest ? e.target.closest('.gn') : null, p = svgPt(e);
+  try { G.dom.svg.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  if (g && G.elMap.has(g)) { const n = G.elMap.get(g); G.drag = { n, x0: p.x, y0: p.y, moved: false }; n.fx = n.x; n.fy = n.y; }
+  else G.drag = { n: null, x0: p.x, y0: p.y, tx: G.tx, ty: G.ty, moved: false };
+  e.preventDefault();
+}
+function gMove(e) {
+  const d = G.drag;
+  if (!d) return;
+  const p = svgPt(e);
+  if (Math.abs(p.x - d.x0) + Math.abs(p.y - d.y0) > 4) d.moved = true;
+  if (d.n) { if (d.moved) { d.n.fx = (p.x - G.tx) / G.k; d.n.fy = (p.y - G.ty) / G.k; graphKick(0.18); } }
+  else { G.tx = d.tx + (p.x - d.x0); G.ty = d.ty + (p.y - d.y0); applyView(); }
+}
+function gUp(e) {
+  const d = G.drag;
+  if (!d) return;
+  G.drag = null;
+  try { G.dom.svg.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  if (d.n) { d.n.fx = d.n.fy = null; if (!d.moved) graphSelect(d.n.id, false); }
+  else if (!d.moved) graphSelect('', false);
+}
+function gKey(e) {
+  const step = 50;
+  const k = e.key;
+  if (k === 'ArrowLeft') G.tx += step; else if (k === 'ArrowRight') G.tx -= step; else if (k === 'ArrowUp') G.ty += step; else if (k === 'ArrowDown') G.ty -= step;
+  else if (k === '+' || k === '=') { zoomAt(G.w / 2, G.h / 2, 1.25); e.preventDefault(); return; }
+  else if (k === '-' || k === '_') { zoomAt(G.w / 2, G.h / 2, 0.8); e.preventDefault(); return; }
+  else if (k === '0') { graphFit(); e.preventDefault(); return; }
+  else if (k === 'Escape') { graphSelect('', false); return; }
+  else return;
+  e.preventDefault(); applyView();
+}
+function graphSetData(data) {
+  const prev = G.byId;
+  const nodes = data.nodes.map(n => { const o = prev.get(n.id); return { id: n.id, label: str(n.label), text: str(n.text), status: n.status, kind: n.kind, platform: n.platform,
+    subject: n.subject, type: n.type, x: o ? o.x : NaN, y: o ? o.y : NaN, vx: 0, vy: 0, deg: 0, fx: null, fy: null, r: 5 }; });
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const links = data.edges.filter(e => byId.has(e.source) && byId.has(e.target) && e.source !== e.target)
+    .map(e => ({ s: byId.get(e.source), t: byId.get(e.target), rel: str(e.rel) }));
+  links.forEach(l => { l.s.deg++; l.t.deg++; });
+  let i = 0;
+  for (const n of nodes) {
+    if (isFinite(n.x)) continue;
+    const nb = links.find(l => (l.s === n && isFinite(l.t.x)) || (l.t === n && isFinite(l.s.x)));
+    if (nb) { const o = nb.s === n ? nb.t : nb.s; n.x = o.x + (Math.random() - 0.5) * 40; n.y = o.y + (Math.random() - 0.5) * 40; }
+    else { const a = i * 2.39996, r = 12 * Math.sqrt(i + 1); n.x = r * Math.cos(a); n.y = r * Math.sin(a); i++; }
+  }
+  nodes.forEach(n => { n.r = n.label === 'Project' ? 13 : n.label === 'Participant' ? 11 : IMPORTANT.has(n.label) ? 9 : 4.5 + Math.min(5, Math.sqrt(n.deg) * 1.2); });
+  G.nodes = nodes; G.links = links; G.byId = byId;
+  if (G.sel && !byId.has(G.sel)) G.sel = '';
+}
+function graphBuild() {
+  const vis = G.nodes.filter(n => !G.hidden.has(n.label)), vs = new Set(vis);
+  G.vis = vis;
+  G.vlinks = G.links.filter(l => vs.has(l.s) && vs.has(l.t));
+  const ef = document.createDocumentFragment(), nf = document.createDocumentFragment();
+  for (const l of G.vlinks) { l.el = sv('line', { class: 'gl' }, sv('title', { text: l.rel })); ef.appendChild(l.el); }
+  for (const n of vis) {
+    const c = sv('circle', { class: 'gc', r: n.r });
+    c.style.fill = gColor(n);
+    const g = sv('g', { class: 'gn' + (IMPORTANT.has(n.label) ? ' imp' : '') }, c,
+      sv('text', { class: 'gt', y: n.r + 11, 'text-anchor': 'middle', text: clip(n.text || n.id, 30) }),
+      sv('title', { text: n.label + ' · ' + n.id + (n.text && n.text !== n.id ? '\n' + n.text : '') }));
+    n.el = g;
+    G.elMap.set(g, n);
+    nf.appendChild(g);
+  }
+  G.dom.edges.replaceChildren(ef);
+  G.dom.nodes.replaceChildren(nf);
+  graphClasses(); graphMatches(); graphDraw();
+  $('gcount').textContent = vis.length + ' of ' + G.nodes.length + ' nodes · ' + G.vlinks.length + ' relations' + (G.nodes.length >= 400 ? ' (latest 400 nodes)' : '');
+}
+function graphTick() {
+  const ns = G.vis, a = G.alpha, n = ns.length;
+  for (let i = 0; i < n; i++) {
+    const p = ns[i];
+    for (let j = i + 1; j < n; j++) {
+      const q = ns[j];
+      let dx = q.x - p.x, dy = q.y - p.y, d2 = dx * dx + dy * dy;
+      if (d2 > 160000) continue;
+      if (d2 < 0.5) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 0.5; }
+      const f = 34 * a * (1 + (p.r + q.r) / 14) / d2;
+      p.vx -= dx * f; p.vy -= dy * f; q.vx += dx * f; q.vy += dy * f;
+    }
+  }
+  for (const l of G.vlinks) {
+    const dx = l.t.x - l.s.x, dy = l.t.y - l.s.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+    const L = 26 + l.s.r + l.t.r + Math.min(30, Math.sqrt(l.s.deg + l.t.deg) * 3);
+    const k = (d - L) / d * 0.07 * a, bs = l.t.deg / (l.s.deg + l.t.deg || 1);
+    l.s.vx += dx * k * bs; l.s.vy += dy * k * bs; l.t.vx -= dx * k * (1 - bs); l.t.vy -= dy * k * (1 - bs);
+  }
+  for (const p of ns) {
+    if (p.fx !== null && p.fx !== undefined) { p.x = p.fx; p.y = p.fy; p.vx = p.vy = 0; continue; }
+    p.vx -= p.x * 0.006 * a; p.vy -= p.y * 0.006 * a;
+    p.vx *= 0.6; p.vy *= 0.6;
+    p.x += Math.max(-30, Math.min(30, p.vx)); p.y += Math.max(-30, Math.min(30, p.vy));
+  }
+  G.alpha *= 0.985;
+}
+function prewarm(n) { G.alpha = 1; for (let i = 0; i < n && G.alpha > 0.02; i++) graphTick(); graphDraw(); }
+function graphDraw() {
+  for (const l of G.vlinks) { l.el.setAttribute('x1', r1(l.s.x)); l.el.setAttribute('y1', r1(l.s.y)); l.el.setAttribute('x2', r1(l.t.x)); l.el.setAttribute('y2', r1(l.t.y)); }
+  for (const n of G.vis) n.el.setAttribute('transform', 'translate(' + r1(n.x) + ',' + r1(n.y) + ')');
+}
+function graphLoop() {
+  G.raf = 0;
+  if (S.tab !== 'graph' || document.hidden) return;
+  graphTick(); graphTick(); graphDraw();
+  if (G.alpha > 0.005 || G.drag) G.raf = requestAnimationFrame(graphLoop);
+}
+function graphKick(a) { G.alpha = Math.max(G.alpha, a); if (!G.raf && S.tab === 'graph' && !RM) G.raf = requestAnimationFrame(graphLoop); else if (RM) { for (let i = 0; i < 60; i++) graphTick(); graphDraw(); } }
+function graphStop() { if (G.raf) cancelAnimationFrame(G.raf); G.raf = 0; }
+function graphFit() {
+  const ns = G.vis;
+  if (!ns.length || !G.w) return;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const n of ns) { x0 = Math.min(x0, n.x - n.r); y0 = Math.min(y0, n.y - n.r); x1 = Math.max(x1, n.x + n.r); y1 = Math.max(y1, n.y + n.r + 12); }
+  const k = Math.min(2.2, Math.max(0.12, Math.min((G.w - 60) / Math.max(1, x1 - x0), (G.h - 60) / Math.max(1, y1 - y0))));
+  G.k = k; G.tx = G.w / 2 - (x0 + x1) / 2 * k; G.ty = G.h / 2 - (y0 + y1) / 2 * k;
+  applyView();
+}
+function graphClasses() {
+  const sel = G.byId.get(G.sel), nb = new Set();
+  const showSel = !!(sel && G.vis.includes(sel));
+  if (showSel) for (const l of G.vlinks) { if (l.s === sel) nb.add(l.t); else if (l.t === sel) nb.add(l.s); }
+  G.dom.svg.classList.toggle('has-sel', showSel);
+  for (const n of G.vis) { n.el.classList.toggle('sel', n === sel); n.el.classList.toggle('nb', nb.has(n)); }
+  for (const l of G.vlinks) l.el.classList.toggle('hl', showSel && (l.s === sel || l.t === sel));
+}
+function graphMatches() {
+  const q = G.q.toLowerCase();
+  for (const n of G.vis) n.el.classList.toggle('match', !!q && (n.id.toLowerCase().includes(q) || n.text.toLowerCase().includes(q)));
+}
+function graphSelect(id, center) {
+  G.sel = id;
+  const n = G.byId.get(id);
+  if (n && G.hidden.has(n.label)) { G.hidden.delete(n.label); graphBuild(); renderGraphChips(true); }
+  graphClasses();
+  if (n && center && G.w) { G.tx = G.w / 2 - n.x * G.k; G.ty = G.h / 2 - n.y * G.k; applyView(); }
+  renderGraphSide(true);
+}
+function renderGraphChips(force) {
+  const counts = new Map();
+  for (const n of G.nodes) counts.set(n.label, (counts.get(n.label) || 0) + 1);
+  const labels = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  patch($('r-gchips'), [labels, Array.from(G.hidden).sort()], () => [
+    labels.map(([l, c]) => h('button', { class: 'lchip', type: 'button', 'aria-pressed': String(!G.hidden.has(l)), data: { fkey: 'gl-' + l },
+      title: (G.hidden.has(l) ? 'Show ' : 'Hide ') + l + ' nodes',
+      on: { click: () => { if (G.hidden.has(l)) G.hidden.delete(l); else G.hidden.add(l); graphBuild(); graphKick(0.35); renderGraphChips(true); renderGraphSide(true); } } },
+    h('span', { class: 'sw', style: { background: l === 'Participant' ? '#D97757' : (own(GCOL, l) ? GCOL[l] : '#8B93A5') }, 'aria-hidden': 'true' }), l, h('b', { text: String(c) }))),
+    h('span', { class: 'muted sm', text: 'Click a node for details · drag to move · wheel to zoom' })], force);
+}
+function renderGraphSide(force) {
+  const q = G.q.toLowerCase();
+  const res = q ? G.nodes.filter(n => n.id.toLowerCase().includes(q) || n.text.toLowerCase().includes(q)).slice(0, 12) : [];
+  patch($('r-gresults'), [q, res.map(n => n.id)], () => q ? (res.length ? h('ul', { class: 'results nbl' }, res.map(n => h('li', {}, h('button', { type: 'button', data: { fkey: 'gr-' + n.id }, on: { click: () => graphSelect(n.id, true) } },
+    h('span', { class: 'gdot', style: { background: gColor(n) }, 'aria-hidden': 'true' }), h('span', { class: 'rel', text: n.label }), h('span', { class: 'nx', text: clip(n.text || n.id, 60) })))))
+    : h('p', { class: 'muted sm', text: 'No node matches.' })) : null, force);
+  const n = G.byId.get(G.sel);
+  patch($('r-gdetail'), [G.sel, n ? [n.text, n.status] : null, G.links.length, peopleSig()], () => {
+    if (!n) {
+      return h('div', { class: 'empty sm' }, h('p', { class: 'empty-t', text: 'Select a node' }),
+        h('p', { class: 'empty-s', text: 'Click any node to see what it is, who made it and how it connects. Messages and votes are hidden by default; use the chips above to show them.' }));
+    }
+    const nbs = [];
+    for (const l of G.links) { if (l.s === n) nbs.push(['→', l.rel, l.t]); else if (l.t === n) nbs.push(['←', l.rel, l.s]); }
+    nbs.sort((a, b) => a[1].localeCompare(b[1]));
+    const w = n.label === 'Participant' ? who(n.id) : null;
+    return h('div', {},
+      h('div', { class: 'row wrap gap-s', style: { 'margin-top': '14px' } }, h('span', { class: 'gdot', style: { background: gColor(n) }, 'aria-hidden': 'true' }), chip(n.label, 'st-mute'), n.status ? chip(n.status) : null),
+      h('h3', { text: w ? w.name : (n.text || n.id) }),
+      h('dl', { class: 'kv' }, h('dt', { text: 'id' }), h('dd', { class: 'mono', text: n.id }),
+        n.kind ? [h('dt', { text: 'kind' }), h('dd', { text: str(n.kind) })] : null,
+        n.type ? [h('dt', { text: 'type' }), h('dd', { text: str(n.type) })] : null,
+        n.platform ? [h('dt', { text: 'platform' }), h('dd', { text: str(n.platform) })] : null,
+        n.subject ? [h('dt', { text: 'subject' }), h('dd', { text: str(n.subject) })] : null,
+        h('dt', { text: 'relations' }), h('dd', { text: String(nbs.length) })),
+      nbs.length ? h('ul', { class: 'nbl', data: { scroll: 'nbl' } }, nbs.slice(0, 80).map(([dir, rel, o]) => h('li', {}, h('button', { type: 'button', data: { fkey: 'nb-' + rel + o.id }, on: { click: () => graphSelect(o.id, true) }, title: o.label + ' · ' + o.id },
+        h('span', { class: 'gdot', style: { background: gColor(o) }, 'aria-hidden': 'true' }), h('span', { class: 'rel', text: dir + ' ' + rel }), h('span', { class: 'nx', text: clip(o.label === 'Participant' ? who(o.id).name : (o.text || o.id), 60) }))))) : null);
+  }, force);
+}
+function renderGraphTab() {
+  graphInitDom();
+  const r = G.dom.svg.getBoundingClientRect();
+  if (r.width && r.height) { if (!G.w) { G.tx = r.width / 2; G.ty = r.height / 2; } G.w = r.width; G.h = r.height; }
+  if (!S.graph) { if (!S.graphBusy) loadGraph(); patch($('r-gchips'), 'loading', () => h('span', { class: 'muted', text: 'Loading the knowledge graph…' })); return; }
+  if (G.dataSig !== S.graphSig) {
+    const first = !G.fitted;
+    graphSetData(S.graph);
+    G.dataSig = S.graphSig;
+    graphBuild();
+    if (first) { prewarm(260); graphFit(); G.fitted = true; graphKick(0.08); } else graphKick(0.25);
+  } else if (G.alpha > 0.005) graphKick(0);
+  renderGraphChips(false);
+  renderGraphSide(false);
+}
+
+// ------------------------------------------------------------------ TASKS & COMMANDS
+const TASK_ORDER = { RUNNING: 0, ASSIGNED: 1, READY: 2, BLOCKED: 3, FAILED: 4, COMPLETED: 5 };
+function renderTasks() {
+  const ov = S.ov;
+  const titles = new Map(ov.tasks.map(t => [t.id, t.title]));
+  patch($('r-tasks'), [ov.tasks, peopleSig()], () => {
+    if (!ov.tasks.length) return empty('No tasks yet');
+    const list = ov.tasks.slice().sort((a, b) => num(TASK_ORDER[a.status], 6) - num(TASK_ORDER[b.status], 6) || ts(a.created_at) - ts(b.created_at));
+    return h('div', { class: 'tbl-wrap' }, h('table', {},
+      h('thead', {}, h('tr', {}, ['Task', 'Status', 'Type', 'Depends on', 'Assignee', 'Plan'].map(x => h('th', { scope: 'col', text: x })))),
+      h('tbody', {}, list.map(t => h('tr', {},
+        h('td', {}, h('div', { class: 'tt', text: t.title }), h('div', { class: 'row gap-s', style: { 'margin-top': '4px' } }, idTag(t.id), t.priority && t.priority !== 'normal' ? chip(t.priority, t.priority === 'high' ? 'st-warn' : 'st-mute') : null)),
+        h('td', {}, chip(t.status)),
+        h('td', {}, h('span', { class: 'tag', text: str(t.type) || 'general' }), t.capability ? h('div', { class: 'muted sm', text: 'needs ' + t.capability }) : null),
+        h('td', {}, arr(t.depends_on).length ? h('div', { class: 'row wrap gap-s' }, arr(t.depends_on).map(d => h('span', { class: 'idt mono', title: str(titles.get(d) || d), text: clip(d, 14) }))) : h('span', { class: 'muted', text: '—' })),
+        h('td', {}, t.assignee ? person(t.assignee, { sm: true }) : h('span', { class: 'muted', text: '—' })),
+        h('td', {}, t.plan_key ? h('span', { class: 'mono idt', text: str(t.plan_key), title: str(t.plan_id) }) : h('span', { class: 'muted', text: '—' })))))));
+  });
+  patch($('r-cmds'), [ov.commands, peopleSig()], () => {
+    if (!ov.commands.length) return empty('No commands yet');
+    return h('div', { class: 'tbl-wrap' }, h('table', {},
+      h('thead', {}, h('tr', {}, ['Command', 'Type', 'Target', 'Task', 'Status', 'Attempt', 'Created'].map(x => h('th', { scope: 'col', text: x })))),
+      h('tbody', {}, ov.commands.slice().reverse().map(c => h('tr', {},
+        h('td', {}, idTag(c.command_id)), h('td', {}, h('span', { class: 'tag', text: str(c.type) })),
+        h('td', {}, person(c.target_participant_id, { sm: true })),
+        h('td', {}, c.task_id ? h('span', { class: 'idt mono', title: str(titles.get(c.task_id) || c.task_id), text: clip(titles.get(c.task_id) || c.task_id, 36) }) : h('span', { class: 'muted', text: '—' })),
+        h('td', {}, chip(c.status)), h('td', {}, num(c.attempt, 1) > 1 ? chip(String(c.attempt), 'st-warn') : h('span', { class: 'muted', text: String(num(c.attempt, 1)) })),
+        h('td', {}, timeEl(c.created_at)))))));
+  });
+}
+
+// ------------------------------------------------------------------ CHATS & QUESTIONS
+function renderChats() {
+  const ov = S.ov;
+  patch($('r-convs'), [ov.conversations, peopleSig()], () => ov.conversations.length ? h('div', { class: 'convs' }, ov.conversations.slice().reverse().map(c => h('div', { class: 'conv' },
+    h('div', { class: 'row wrap gap-s' }, chip(c.kind || 'chat', c.kind === 'note' ? 'k-review' : 'k-context'), h('span', { class: 'chip pf-' + pfKey(c.source_platform), text: str(c.source_platform) || 'unknown' })),
+    h('h3', { text: c.title }),
+    h('div', { class: 'row wrap gap-s muted sm' }, 'ingested by', person(c.ingested_by, { sm: true }), h('span', { text: '· ' + num(c.length).toLocaleString() + ' chars' }), timeEl(c.created_at)),
+    h('div', {}, idTag(c.id)))))
+    : empty('No chats ingested yet', 'A session calls chat_ingest(title, transcript, findings, agreements, open_questions, tasks); everything extracted links back to the stored chat.'));
+  patch($('r-questions'), [ov.open_questions, ov.debates.map(d => [d.question, d.status]), peopleSig()], () => {
+    if (!ov.open_questions.length) return empty('No open questions');
+    const deb = new Map(ov.debates.map(d => [str(d.question).trim().toLowerCase(), d]));
+    return h('ul', { class: 'qs' }, ov.open_questions.map(q => {
+      const d = deb.get(str(q.text).trim().toLowerCase());
+      return h('li', {}, h('span', { class: 'qm', 'aria-hidden': 'true', text: '?' }), h('span', { class: 'qx', text: q.text }),
+        h('div', { class: 'qf' }, 'raised by', person(q.raised_by, { sm: true }), idTag(q.id),
+          d ? h('button', { class: 'chip ' + (d.status === 'decided' ? 'st-ok' : 'st-warn'), type: 'button', on: { click: () => selectTab('debates', true) } }, d.status === 'decided' ? 'debate decided' : 'debate ' + d.status) : null));
+    }));
+  });
+}
+async function loadExport(download) {
+  const btn = download ? $('exDownload') : $('exLoad');
+  btn.disabled = true;
+  try {
+    const text = await api('/export.md', { text: true });
+    S.exportText = text;
+    if (download) {
+      const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = 'PALINOR.md';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } else { $('exPre').hidden = false; $('exPre').textContent = text; }
+  } catch (e) { toast(e.message, 'bad'); } finally { btn.disabled = false; }
+}
+
+// ------------------------------------------------------------------ DECISIONS
+function renderDecisions() {
+  const ov = S.ov;
+  patch($('r-decisions'), [ov.decisions, peopleSig(), Array.from(S.open).filter(k => k.startsWith('d'))], () => {
+    if (!ov.decisions.length) return empty('No decisions yet', 'Laya commits a decision when a debate has a clear winner; conflict resolutions and tie-breaks are recorded here too.');
+    return h('ol', { class: 'tl' }, ov.decisions.slice().sort((a, b) => ts(b.created_at) - ts(a.created_at)).map(decisionItem));
+  });
+}
+function decisionItem(d) {
+  const conflict = d.mode === 'conflict';
+  const out = str(d.outcome || 'DECIDED');
+  const tone = out === 'TIEBREAK' ? 'st-hot' : conflict ? 'st-info' : 'st-ok';
+  const opts = new Map(arr(d.options).map(o => [o.proposal_id, o]));
+  const ranking = arr(d.ranking).slice(0, 5);
+  const audit = d.evidence_audit || null;
+  return h('li', { class: tone },
+    h('article', { class: 'card dec' },
+      h('div', { class: 'row wrap gap-s' }, chip(out.replace(/_/g, ' ').toLowerCase(), tone), d.mode ? chip(d.mode, 'st-mute') : null, idTag(d.id), timeEl(d.created_at),
+        d.resolver ? h('span', { class: 'row gap-s muted sm' }, 'by', person(d.resolver, { sm: true })) : h('span', { class: 'row gap-s muted sm' }, 'by', person('laya', { sm: true }))),
+      h('h3', { text: d.question }),
+      h('div', { class: 'dec-sel' }, h('span', { class: 'muted sm', text: conflict ? 'Resolution' : 'Selected' }),
+        h('strong', { text: conflict ? str(d.selected_option).replace('_', ' ') + (d.selected_approach && d.selected_approach !== d.selected_option ? ': ' + d.selected_approach : '') : str(d.selected_approach || d.selected_option) }),
+        !conflict ? h('div', { class: 'row wrap gap-s' }, idTag(d.selected_option), opts.get(d.selected_option) ? person(opts.get(d.selected_option).author, { sm: true }) : null,
+          arr(d.lineage).length ? [h('span', { class: 'muted sm', text: 'synthesis of' }), arr(d.lineage).map(idTag)] : null) : null),
+      arr(d.rationale).length ? h('ul', { class: 'rat' }, arr(d.rationale).map(x => h('li', { text: humanize(x) }))) : null,
+      ranking.length ? h('div', { class: 'rank' }, ranking.map(r => h('div', { class: 'rank-r' },
+        h('span', { class: 'rn', title: str(r.approach) }, r.proposal_id === d.selected_option ? '✓ ' : '', clip(r.approach || r.proposal_id, 90), r.superseded_by ? ' (superseded)' : ''),
+        h('span', { class: 'sbar' }, h('span', { style: { width: pct(Math.min(1, num(r.score))) } })), h('span', { class: 'rv', text: fmt(r.score) })))) : null,
+      conflict && audit ? auditBar(audit, str(audit.chosen), !!audit.against_evidence) : null,
+      conflict && arr(d.effects).length ? h('ul', { class: 'effects' }, arr(d.effects).map(x => h('li', { text: x }))) : null,
+      arr(d.dissent).length ? h('details', { class: 'more' }, h('summary', { text: arr(d.dissent).length + ' dissent recorded' }),
+        h('ul', { class: 'effects' }, arr(d.dissent).map(x => h('li', {}, person(x.author || x.vote_by || x.by, { sm: true }), ' ',
+          str(x.approach || x.rationale || x.position || ''))))) : h('p', { class: 'muted sm', style: { margin: '10px 0 0' }, text: 'No dissent recorded.' })));
+}
+
+// ------------------------------------------------------------------ EVENTS
+function evSummary(e) {
+  const p = (e && e.payload && typeof e.payload === 'object') ? e.payload : {};
+  const out = [];
+  const keys = ['question', 'title', 'claim', 'subject', 'goal', 'name', 'type', 'kind', 'note', 'outcome', 'selected', 'resolution', 'position',
+    'value', 'mode', 'severity', 'capability', 'reason', 'summary', 'task_type', 'platform', 'role', 'conflict_id', 'decision_id', 'proposal_id',
+    'plan_id', 'debate_id', 'conversation_id', 'finding_id', 'url', 'branch'];
+  for (const k of keys) if (own(p, k) && p[k] !== '' && p[k] !== null && typeof p[k] !== 'object') out.push(k.replace(/_/g, ' ') + ': ' + clip(p[k], 90));
+  if (Array.isArray(p.to)) out.push('to: ' + p.to.map(x => x === 'all' ? 'everyone' : who(x).name).join(', '));
+  if (Array.isArray(p.about)) out.push('about: ' + p.about.slice(0, 4).join(', '));
+  if (Array.isArray(p.asked)) out.push('asked: ' + p.asked.map(x => who(x).name).join(', '));
+  if (e.status && !out.some(x => x.startsWith('status'))) out.push('status: ' + e.status);
+  if (typeof e.duration_ms === 'number') out.push(Math.round(e.duration_ms) + ' ms');
+  return clip(humanize(out.join(' · ')), 260);
+}
+function renderEvChips() {
+  const counts = new Map();
+  for (const e of S.events.values()) { const t = topicOf(e.event_type); counts.set(t, (counts.get(t) || 0) + 1); }
+  const names = TOPIC_NAMES.filter(t => counts.has(t));
+  patch($('r-evchips'), [names.map(t => [t, counts.get(t)]), Array.from(S.evF.off).sort()], () => names.map(t => h('button', { class: 'chip kchip ev-' + t, type: 'button',
+    'aria-pressed': String(!S.evF.off.has(t)), data: { fkey: 'evt-' + t }, title: t + '-events topic',
+    on: { click: () => { if (S.evF.off.has(t)) S.evF.off.delete(t); else S.evF.off.add(t); renderEvChips(); renderEvents(); } } }, t + ' ' + counts.get(t))));
+}
+function renderEvents() {
+  renderEvChips();
+  const F = S.evF;
+  const all = F.paused && F.frozen ? F.frozen : Array.from(S.events.values()).sort((a, b) => b.seq - a.seq);
+  const q = F.q.toLowerCase();
+  const list = all.filter(e => !(F.hideReads && e.event_type === 'MESSAGE_READ') && !F.off.has(topicOf(e.event_type)))
+    .filter(e => !q || (str(e.event_type) + ' ' + who(e.participant_id).name + ' ' + str(e.task_id) + ' ' + evSummary(e)).toLowerCase().includes(q)).slice(0, 300);
+  patch($('r-events'), [list.map(e => e.seq), F.hideReads, q, Array.from(F.off).sort(), peopleSig(), F.paused], () => list.length ? h('ul', { class: 'evs' }, list.map(e => {
+    const tgt = e.target_participant_id && e.target_participant_id !== 'multi' && e.target_participant_id !== 'all' ? e.target_participant_id : null;
+    return h('li', {},
+      h('span', { class: 'seq', text: '#' + e.seq }),
+      timeEl(e.occurred_at),
+      h('span', { class: 'ety' }, chip(e.event_type, 'ev-' + topicOf(e.event_type), topicOf(e.event_type) + '-events')),
+      h('span', { class: 'es' }, e.participant_id ? person(e.participant_id, { sm: true }) : null,
+        tgt ? [h('span', { class: 'muted', text: '→' }), person(tgt, { sm: true })] : null,
+        e.task_id ? idTag(e.task_id) : null, h('span', { class: 'sx', text: evSummary(e), title: evSummary(e) })));
+  })) : empty(S.events.size ? 'No events match the filters' : 'No events yet'));
+}
+
+const RENDER = { overview: renderOverview, pipeline: renderPipeline, conflicts: renderConflicts, debates: renderDebates, messages: renderMessages,
+  graph: renderGraphTab, tasks: renderTasks, chats: renderChats, decisions: renderDecisions, events: renderEvents };
+
+// ------------------------------------------------------------------ connect + wiring
+function resetProjectState() {
+  S.gen++;
+  S.ov = S.pl = S.cf = S.graph = null; S.graphSig = ''; S.graphAt = 0; S.err = null; S.okAt = 0;
+  S.sigs.clear(); S.events.clear(); S.seenMsgs = null; S.pendingPulses = []; S.newMsgs = 0; S.open.clear(); S.reply = null;
+  S.people = new Map(); S.exportText = '';
+  G.nodes = []; G.links = []; G.byId = new Map(); G.vis = []; G.vlinks = []; G.dataSig = ''; G.fitted = false; G.sel = ''; graphStop();
+  if (G.dom) { G.dom.edges.replaceChildren(); G.dom.nodes.replaceChildren(); }
+  ['netEdges', 'netNodes', 'netPulses'].forEach(id => $(id).replaceChildren());
+  pulses.length = 0;
+  $('exPre').hidden = true; $('exPre').textContent = '';
+  cancelReply();
+}
+function connect(pid, admin) {
+  resetProjectState();
+  S.pid = pid; S.admin = admin;
+  store.set('palinor.pid', pid); store.set('palinor.admin', admin);
+  $('inAdmin').value = '';
+  $('inAdmin').placeholder = 'saved for this tab — leave empty to keep';
+  render();
+  poll();
+}
+function toggleConnect(show) {
+  const c = $('connect');
+  c.hidden = show === undefined ? !c.hidden : !show;
+  $('btnProject').setAttribute('aria-expanded', String(!c.hidden));
+  if (!c.hidden) { $('inPid').value = S.pid; $('inPid').focus(); }
+}
+
+function boot() {
+  $('noKeyWarn').hidden = !!KEY;
+  $('inPid').value = S.pid;
+  if (S.admin) $('inAdmin').placeholder = 'saved for this tab — leave empty to keep';
+  $('connectForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const pid = $('inPid').value.trim();
+    let admin = $('inAdmin').value.trim();
+    if (!admin && pid && S.admin) admin = S.admin;
+    const ce = $('connectErr');
+    if (!pid || !admin) { ce.hidden = false; ce.textContent = 'Enter the project id and its admin key.'; return; }
+    if (!/^[\x21-\x7e]+$/.test(pid) || !/^[\x21-\x7e]+$/.test(admin)) { ce.hidden = false; ce.textContent = 'The project id and admin key must be plain ASCII without spaces.'; return; }
+    ce.hidden = true;
+    if (S.ov) toggleConnect(false);
+    connect(pid, admin);
+  });
+  $('btnForget').addEventListener('click', () => {
+    store.set('palinor.pid', ''); store.set('palinor.admin', '');
+    resetProjectState();
+    S.pid = ''; S.admin = '';
+    clearTimeout(S.timer);
+    $('inPid').value = ''; $('inAdmin').value = ''; $('inAdmin').placeholder = 'admin key from palinor_create_project';
+    render();
+    toast('Forgot the project and admin key for this tab.', 'info');
+  });
+  $('btnProject').addEventListener('click', () => toggleConnect());
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.ov && !$('connect').hidden) { toggleConnect(false); $('btnProject').focus(); } });
+
+  const tabs = $('tabs');
+  tabs.addEventListener('click', (e) => { const b = e.target.closest('[role=tab]'); if (b) selectTab(b.dataset.tab, false); });
+  tabs.addEventListener('keydown', (e) => {
+    const i = TAB_LIST.indexOf(S.tab);
+    let j = -1;
+    if (e.key === 'ArrowRight') j = (i + 1) % TAB_LIST.length; else if (e.key === 'ArrowLeft') j = (i - 1 + TAB_LIST.length) % TAB_LIST.length;
+    else if (e.key === 'Home') j = 0; else if (e.key === 'End') j = TAB_LIST.length - 1;
+    if (j >= 0) { e.preventDefault(); selectTab(TAB_LIST[j], true); $('tab-' + TAB_LIST[j]).scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  });
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.goto, true)));
+
+  $('composeForm').addEventListener('submit', sendMessage);
+  $('cBody').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendMessage(e); });
+  $('replyCancel').addEventListener('click', cancelReply);
+  $('mPerson').addEventListener('change', (e) => { S.msgF.person = e.target.value; renderMessages(); });
+  let mt = 0;
+  $('mSearch').addEventListener('input', (e) => { clearTimeout(mt); mt = setTimeout(() => { S.msgF.q = e.target.value.trim(); renderMessages(); }, 150); });
+
+  $('debateForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const q = $('dQ').value.trim();
+    if (!q) { toast('Write the question first.', 'warn'); $('dQ').focus(); return; }
+    try {
+      const out = await post('/debates', { question: q, mode: $('dMode').value, context: $('dCtx').value.trim() }, $('dGo'));
+      toast(out && out.created_at && Date.now() - ts(out.created_at) > 5000 ? 'A debate on this question is already open.' : 'Debate opened; everyone was invited.', 'ok');
+      $('dQ').value = ''; $('dCtx').value = '';
+      $('newDebate').open = false;
+      refreshSoon();
+    } catch (err) { toast(err.message, 'bad'); }
+  });
+
+  $('evHideReads').addEventListener('change', (e) => { S.evF.hideReads = e.target.checked; renderEvents(); });
+  let et = 0;
+  $('evSearch').addEventListener('input', (e) => { clearTimeout(et); et = setTimeout(() => { S.evF.q = e.target.value.trim(); renderEvents(); }, 150); });
+  $('evPause').addEventListener('click', (e) => {
+    S.evF.paused = !S.evF.paused;
+    S.evF.frozen = S.evF.paused ? Array.from(S.events.values()).sort((a, b) => b.seq - a.seq) : null;
+    e.currentTarget.setAttribute('aria-pressed', String(S.evF.paused));
+    e.currentTarget.textContent = S.evF.paused ? 'Resume' : 'Pause';
+    renderEvents();
+  });
+  $('exLoad').addEventListener('click', () => loadExport(false));
+  $('exDownload').addEventListener('click', () => loadExport(true));
+
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && S.pid && S.admin && !(S.err && S.err.fatal)) refreshSoon(); if (!document.hidden && S.tab === 'graph') graphKick(0); });
+  setInterval(() => {
+    if (S.okAt && !S.err) $('liveText').textContent = 'Live · updated ' + relMs(S.okAt);
+  }, 1000);
+  setInterval(() => { document.querySelectorAll('time[data-ts]').forEach(t => { t.textContent = relMs(Number(t.dataset.ts)); }); }, 10000);
+
+  const fromHash = location.hash.replace('#', '');
+  selectTab(TAB_LIST.includes(fromHash) ? fromHash : 'overview', false);
+  if (S.pid && S.admin) poll(); else render();
+}
+boot();
+})();
+</script>
+</body>
+</html>

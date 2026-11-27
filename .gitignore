@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+data/
+.env
+.venv/
+# local run state: holds project admin keys and participant tokens
+demo/.*_state.json
+demo/logs/
+demo/opencode-workspace/.palinor/
+scripts/*.master.json
+scripts/me.json

@@ -1,0 +1,7 @@
+You are the OpenCode session in a PALINOR project. Use ONLY the palinor MCP tools and the file write tool; do not run shell commands.
+Do these steps in order:
+1. Call the palinor tool palinor_join with project_id="P-194a695d", join_key="178nC83fXrfQSskg", name="OpenCode", platform="opencode", role="worker", capabilities=["typescript","python","code-edits"].
+2. Write the file .palinor/session.json containing a JSON object with keys project_id, participant_id, token (from the join result) and latest_seq (0 for now).
+3. Call palinor_sync with your token and since_seq=0. Then rewrite .palinor/session.json with latest_seq set to the latest_seq returned by sync.
+4. Call message_send with your token, to="all", kind="info", subject="Hello from OpenCode", body = two or three sentences introducing yourself as the OpenCode session in this project and what you can help with.
+5. Finish with a short plain-text report: your participant_id, the message_id of your hello, how many messages and your_actions palinor_sync returned, and the sender of each message.
